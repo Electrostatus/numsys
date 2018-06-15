@@ -227,10 +227,11 @@ def lst_to_str(lst, sgn='-', sep='.'):
     return clean(num_str, gn, ep)
 
 
-
 # constants ---------------------------------------------------------------
-version = '0.something'
+version = '0.9.8'
 maxchr += 1  # base 0 uses no characters, so all of unicode is valid
-prec = 53   # precision (in base two)
-digitSet = defaultDigitSet(0)
+prec = setPrec(100)   # precision (in base two)
+digitSet = defaultDigitSet()
+zero_types = [0, [], [0], digitSet[0], str_(), '']
+str_types = ('str', 'unicode')
 

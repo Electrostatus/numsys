@@ -2,6 +2,7 @@
 import support as _sup
 from os import urandom  # used in ze_to
 
+nstd_bases = {}  # {'name': [func from 10 to base, func from base to 10]}
 
 ## --------------- base one --------------------------------
 def to_p1(num, sgn='-'):
@@ -57,6 +58,33 @@ def ze_to(num):
     return  # if it got here (and it shouldn't) return nothin'
 
 
+## --------------- roman numerals --------------------------
+_rmap = (#('Q', 500000), ('MQ', 499000),  # roman numeral extension
+         ('M', 1000), ('CM', 900), ('D', 500), ('CD', 400),
+         ('C', 100),  ('XC', 90),  ('L', 50),  ('XL', 40),
+         ('X', 10),   ('IX', 9),   ('V', 5),   ('IV', 4), ('I', 1))
+
+def to_ro(n, *args):  # args is just to generalize input, none are used
+    "coverts a base ten integer to roman numerals"
+    #if not n: return 'nulla'  # zero extension
+    romu, i = [], abs(n)
+    for r, j in _rmap:
+        k = i // j; i -= j * k
+        romu.append(r * k)
+    return ''.join(romu)
+
+def ro_to(n, *args):
+    "converts roman numerals to a base ten integer"
+    #if n == 'nulla': return 0  # zero extension
+    ans = i = 0; n = n.upper()
+    for r, j in _rmap:
+        while n[i: i + len(r)] == r: ans += j; i += len(r)
+    return ans
+
+nstd_bases['roman'] = [to_ro, ro_to]
+nstd_bases['r'] = [to_ro, ro_to]
+
+
 ## --------------- factorial base --------------------------
 def to_fc(x, sgn='-', sep='.'):
     "converts any number in base ten to factorial base\nreturns a string"
@@ -97,8 +125,8 @@ def fc_to(n, sgn='-', sep='.'):
     except ValueError: neg = 1
 
     is_int = True if not frc else False # answer will be an integer
-    ans = 0 if is_int else decml(0)
-    one = decml(1)
+    ans = 0 if is_int else _sup.decml(0)
+    one = _sup.decml(1)
 
     mx = len(max(whl, frc, key=len))
     whl = [0] * (mx - len(whl)) + whl
@@ -126,34 +154,7 @@ def fc_to(n, sgn='-', sep='.'):
         i += 1; f *= i
     return ans * neg
 
+nstd_bases['factorial'] = [to_fc, fc_to]
+nstd_bases['f'] = [to_fc, fc_to]
 
-## --------------- roman numerals --------------------------
-_rmap = (#('Q', 500000), ('MQ', 499000),  # roman numeral extension
-         ('M', 1000), ('CM', 900), ('D', 500), ('CD', 400),
-         ('C', 100),  ('XC', 90),  ('L', 50),  ('XL', 40),
-         ('X', 10),   ('IX', 9),   ('V', 5),   ('IV', 4), ('I', 1))
-
-def to_ro(n):
-    "coverts a base ten integer to roman numerals"
-    #if not n: return 'nulla'  # zero extension
-    romu, i = [], abs(n)
-    for r, j in _rmap:
-        k = i // j; i -= j * k
-        romu.append(r * k)
-    return ''.join(romu)
-
-def ro_to(n):
-    "converts roman numerals to a base ten integer"
-    #if n == 'nulla': return 0  # zero extension
-    ans = i = 0; n = n.upper()
-##    chk = set('MDCLXVI')#set('QMDCLXVI')
-##    if not all(i in chk for i in n):
-##        E = ValueError('invalid character for roman numerals')
-##        raise E
-    for r, j in _rmap:
-        while n[i: i + len(r)] == r: ans += j; i += len(r)
-    return ans
-
-
-'cis-1-cyclomethyne'
-
+    

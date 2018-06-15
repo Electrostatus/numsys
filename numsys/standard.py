@@ -201,8 +201,8 @@ def to_10(num, base, sgn='-', sep='.'):
     converts a number from given base to base ten
     not valid for nonstandard bases
     """
-    str_types = ('str', 'unicode')  # verifiy input
-    if type(num).__name__ in str_types:
+    # verifiy input
+    if type(num).__name__ in _sup.str_types:
         num = _sup.str_to_lst(num, sgn, sep)
     elif type(num) == list: pass
     else: return num
