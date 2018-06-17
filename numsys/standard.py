@@ -1,6 +1,9 @@
 "standard base conversion functions"
 import support as _sup
 
+log, floor, ceil = _sup.log, _sup.floor, _sup.ceil
+cmplx, decml = _sup.cmplx, _sup.decml
+
 
 def to_zb(num, base, sgn='-'):  # to integer base (Z)
     """
@@ -35,25 +38,25 @@ def to_pb(num, base, sgn='-', sep='.'):  # to Positive base
     if base <= 1:
         raise E
 
-    num, base = _sup.decml(num), _sup.decml(base) # to insure precision
+    num, base = decml(num), decml(base) # to insure precision
     if num < 0: lst = [sgn]; num = -num  # handle negative values
     else: lst = []
     
-    P = _sup.ceil(_sup.log(abs(num), base)); X = num / base ** P  # setup stuff
+    P = ceil(log(abs(num), base)); X = num / base ** P  # setup stuff
     #while not 0 <= X < 1: P += 1; X = num / base ** P  # log should cover this
-    def T(x): return base * x - _sup.floor(base * x)  # transformation function
+    def T(x): return base * x - floor(base * x)  # transformation function
 
     if P <= 0:  # if starting with a fractional value
         lst.extend([0, sep])
         lst.extend(([0] * -int(P)))
 
     prc = _sup.prec
-    prc = int(prc * _sup.log(2, base))  # insure precision is in new base
+    prc = int(prc * log(2, base))  # insure precision is in new base
     prc = P - prc  # go only as far as precision is good
     if prc >= 0: prc = -1  # but in this event, go as far as B^-1
 
     while P > prc:  # conversion step
-        d = int(_sup.floor(X * base))  # get digit
+        d = int(floor(X * base))  # get digit
         X = T(X)
         if P == 0 and sep not in lst:  # don't add it if its already there!
             lst.append(sep)
@@ -74,27 +77,27 @@ def to_nb(num, base, sgn='-', sep='.'):  # to Negative base
     if base >= -1:
         raise E
 
-    num, base, one = _sup.decml(num), abs(_sup.decml(base)), _sup.decml(1)
+    num, base, one = decml(num), abs(decml(base)), decml(1)
     # ref. defines method for -base where base > 0
 
     prc = _sup.prec
-    P, lst = int(_sup.floor(_sup.log(abs(num), base))), []
+    P, lst = int(floor(log(abs(num), base))), []
     l, r, X = -base / (base + one), 1 / (base + one), num
     while not l <= X < r:  # P is better determined here
         P += 1             # the log taken above just speeds it up
         X = num / (-base) ** P
-    def T(x): return -base * x - _sup.floor(-base * x - l)
+    def T(x): return -base * x - floor(-base * x - l)
     
     if P <= 0:  # starting with a fractional value
         lst.extend([0, sep])
         lst.extend(([0] * -int(P)))
 
     #this appears to work for negative bases so I'm going with it
-    prc = int(prc * _sup.log(2, abs(base)))
+    prc = int(prc * log(2, abs(base)))
     prc = -1 if (P - prc) >= 0 else (P - prc)
 
     while P >= prc:  # conversion step
-        d = int(_sup.floor(-base * X - l))
+        d = int(floor(-base * X - l))
         X = T(X)
         if P == 0 and sep not in lst: lst.append(sep)  # add sep only once
         if d == base: lst.extend([d - 1, 0])  # if this happens, you do this
@@ -113,7 +116,7 @@ def to_vb(num, base, sgn='-', sep='.'):  # to inVerted base
 
     # for a base 0<b<1: convert to base 1/b,
     #  shift radix to the left one column and swap all the digits
-    inv = _sup.decml(1) / _sup.decml(base)  # invert the base, convert to base 1/B
+    inv = decml(1) / decml(base)  # invert the base, convert to base 1/B
     if int(num) == num and int(inv) == inv: ans = to_zb(num, inv, sgn)
     elif base < 0: ans = to_nb(num, inv, sgn, sep)
     else: ans = to_pb(num, inv, sgn, sep)
@@ -135,7 +138,7 @@ def to_rb(num, base, sgn='-', sep='.'):  # to Real base
     ties to_zb, to_pb, to_nb, to_vb into one function
     """
     E = ValueError('invalid base')
-    num, base = _sup.decml(num), _sup.decml(base)
+    num, base = decml(num), decml(base)
     if base < -1: ans = to_nb(num, base, sgn, sep)
     elif 0 < abs(base) < 1: ans = to_vb(num, base, sgn, sep)
     elif base > 1: ans = to_pb(num, base, sgn, sep)
@@ -164,10 +167,10 @@ def to_ib(num, base, sgn='-', sep='.'):  # to Imaginary base
     eb = -(abs(base) ** 2)
     if abs(base.imag) > 1:
         real = to_nb(real, eb, sgn, sep)
-        imag = to_nb(_sup.decml(imag) / base.imag, eb, sgn, sep)
+        imag = to_nb(decml(imag) / decml(base.imag), eb, sgn, sep)
     elif 0 < abs(base.imag) < 1:
         real = to_vb(real, eb, sgn, sep)
-        imag = to_vb(_sup.decml(imag) / base.imag, eb, sgn, sep)
+        imag = to_vb(decml(imag) / decml(base.imag), eb, sgn, sep)
     else: raise E
 
     # split into whole and fractional parts
@@ -208,11 +211,11 @@ def to_10(num, base, sgn='-', sep='.'):
     else: return num
     
     if base.imag:  # imag/complex bases
-        s, ans, base = 1, _sup.cmplx(0), _sup.cmplx(base)
+        s, ans, base = 1, cmplx(0), cmplx(base)
     elif int(base) == base and sep not in num:  # integer bases
         s, ans, base = 1, 0, int(base)
     else:  # real bases
-        s, ans, base = 1, _sup.decml(0), _sup.decml(base)
+        s, ans, base = 1, decml(0), decml(base)
     if sgn in num: num.remove(sgn); s = -1  # handle negatives
 
     # determine order of magnitude
@@ -220,13 +223,13 @@ def to_10(num, base, sgn='-', sep='.'):
     except: P = len(num) - 1  # ints, longs
 
     # find max allowed character for base
-    if base.imag: chk = abs(base * (base.real - base.imag))  # can't use base.conjugate(), gmpy2 2.0.8 crashes
+    if base.imag: chk = abs(base * cmplx(base.real, -base.imag))  # can't use .conjugate(), gmpy2 2.0.8 crashes
     else: chk = abs(base)
 
     # error checking
     E = ValueError('invalid base')  # invalid bases 0 or 1
-    if 0 < chk < 1: chk = int(_sup.ceil(_sup.decml(1) / chk))
-    elif chk > 1: chk = int(_sup.ceil(chk))
+    if 0 < chk < 1: chk = int(ceil(decml(1) / chk))
+    elif chk > 1: chk = int(ceil(chk))
     else: raise E
     if max(num) >= chk:  # invalid characters
         mes = _sup.str_('invalid character for base {}').format(base)

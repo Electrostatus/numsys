@@ -7,6 +7,7 @@ from collections import namedtuple
 import string
 
 try:  # to look for better installed modules
+    #import this_is_not_a_module_name_this_is_just_for_testing
     try:  # look for gmpy2 
         import gmpy2 as gm
         def log(x, b=None):
@@ -37,7 +38,8 @@ try:  # to look for better installed modules
         backend = 'mpmath' 
     
 except ImportError:  # failing those, use the built-in modules
-    from math import ceil, floor
+    from math import ceil as _cil, floor as _flr
+    floor, ceil = lambda x: int(_flr(x)), lambda x: int(_cil(x))
     import decimal as dm, complex_decimal as cd
     def log(x, b=None):
         if not b: return decml(x).ln()
@@ -56,6 +58,8 @@ except ImportError:  # failing those, use the built-in modules
 ##    from math import log, ceil, floor
 ##    decml, cmplx = float, complex
 ##    backend = None
+
+import nonstandard as nstd  # used in parseBase
 
 # functions ---------------------------------------------------------------
 
@@ -90,8 +94,9 @@ def defaultDigitSet(full=True):
 
 def setDigitSet(seq):
     "sets digitSet to given digits in seq"
-    global digitSet
+    global digitSet, zero_types
     digitSet = unique(seq)
+    zero_types = [0, [], [0], digitSet[0], str_(), '']
 
 def setPrec(prc=None):
     """
@@ -226,6 +231,30 @@ def lst_to_str(lst, sgn='-', sep='.'):
     ep = sep if has_sep else has_sep
     return clean(num_str, gn, ep)
 
+def parseInput(x):
+    "parse a input to real, imag parts"
+    name = type(x).__name__
+    if name in str_types:
+        real, imag = x, 0  # string types
+    elif name == 'tuple':
+        real, imag = x[0], x[1]  # tuple
+    else:
+        try: real, imag = x.real, x.imag  # numeric types, named tuple
+        except AttributeError: real, imag = x, 0  # anything else
+    return real, imag
+
+def parseBase(b):
+    "parse a base input"
+    name = type(b).__name__
+    if name in str_types:
+        b = str_(b).lower()
+        if b in nstd.nstd_bases: pass
+        elif 'i' in b or 'j' in b: b = cmplx(b.replace('i', 'j'))
+        else: b = decml(b); a = int(b); b = a if a == b else b
+    elif name == 'tuple':
+        b = cmplx(b[0], b[1])
+    else: pass
+    return b
 
 # constants ---------------------------------------------------------------
 version = '0.9.8'

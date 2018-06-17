@@ -4,39 +4,57 @@ from os import urandom  # used in ze_to
 
 nstd_bases = {}  # {'name': [func from 10 to base, func from base to 10]}
 
+# functions all take a number, sgn and sep - but not all are used
+# this is to generalize the input and make it easy to call from
+# nstd_bases; i.e. value = nstd_bases[name][0](number, sgn, sep)
+
+def addBase(name, func_to_base, func_from_base):
+    """
+    adds a base to list of nonstandard or custom number bases
+    name - lowercase string of base name
+    func_to_base - function that converts a numeric input to base
+                   must accept three inputs in this order:
+                   x (the numeric input), sgn='-', sep='.'
+    func_from_base - function that converts a string input to base
+                     must accept three inputs in this order:
+                     x (the string input), sgn='-', sep='.'
+    """
+    global nstd_bases
+    nstd_bases[name] = [func_to_base, func_from_base]
+
 ## --------------- base one --------------------------------
-def to_p1(num, sgn='-'):
+def to_p1(n, sgn='-', sep='.'):
     "converts an integer in base ten to base one"
-    if num < 0: return sgn + (_sup.digitSet[1] * int(-num))
-    elif num > 0: return _sup.digitSet[1] * int(num)
+    if n < 0: return sgn + (_sup.digitSet[1] * int(-n))
+    elif n > 0: return _sup.digitSet[1] * int(n)
     else: return ''
 
-def p1_to(num, sgn='-'):
+def p1_to(n, sgn='-', sep='.'):
     "converts a base one value to base ten"
-    if sgn in num: return -(len(num) - 1)
-    else: return len(num)
+    if sgn in n: return -(len(n) - 1)
+    else: return len(n)
 
 
 ## --------------- base negative one -----------------------
-def to_n1(num):
+def to_n1(n, sgn='-', sep='.'):
     "converts an integer in base ten to base negative one"
-    if num > 0: return _sup.digitSet[1] * (int(num) * 2 - 1)
-    elif num < 0: return _sup.digitSet[1] * (-int(num) * 2)
+    if n > 0: return _sup.digitSet[1] * (int(n) * 2 - 1)
+    elif n < 0: return _sup.digitSet[1] * (-int(n) * 2)
     else: return ''
 
-def n1_to(num):
+def n1_to(n, sgn='-', sep='.'):
     "converts a base negative one value to base ten"
-    l = len(num)
+    l = len(n)
     if not l % 2: return -l // 2
     else: return l // 2 + 1
 
 
 ## --------------- base zero -------------------------------
-def to_ze(num):
+def to_ze(x, sgn='-', sep='.'):
     "converts any number in base ten to base zero"
     return ''
 
-def ze_to(num):
+def ze_to(x, sgn='-', sep='.'):
     "converts a base zero value to base ten"
     E1 = SyntaxError('base zero does not use any characters')
     class BaseZero(ZeroDivisionError): pass  # ice cream koan
@@ -52,7 +70,7 @@ def ze_to(num):
     except Exception:
         E2 = BaseZero(E2_errs[5])
         
-    if num == '' or num is None:
+    if x == '' or x is None:
         raise E2
     else: raise E1
     return  # if it got here (and it shouldn't) return nothin'
@@ -64,7 +82,7 @@ _rmap = (#('Q', 500000), ('MQ', 499000),  # roman numeral extension
          ('C', 100),  ('XC', 90),  ('L', 50),  ('XL', 40),
          ('X', 10),   ('IX', 9),   ('V', 5),   ('IV', 4), ('I', 1))
 
-def to_ro(n, *args):  # args is just to generalize input, none are used
+def to_ro(n, sgn='-', sep='.'):
     "coverts a base ten integer to roman numerals"
     #if not n: return 'nulla'  # zero extension
     romu, i = [], abs(n)
@@ -73,7 +91,7 @@ def to_ro(n, *args):  # args is just to generalize input, none are used
         romu.append(r * k)
     return ''.join(romu)
 
-def ro_to(n, *args):
+def ro_to(n, sgn='-', sep='.'):
     "converts roman numerals to a base ten integer"
     #if n == 'nulla': return 0  # zero extension
     ans = i = 0; n = n.upper()

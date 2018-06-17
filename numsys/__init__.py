@@ -83,7 +83,7 @@ def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
     if b1.real and not b1.imag:  # real base
         valr = _std.to_10(real, b1, sgn, sep)
         vali = _std.to_10(imag, b1, sgn, sep)
-        val10 = valr if not vali else (valr + vali * 1j)
+        val10 = valr if not vali else (valr + vali * cmplx(0, 1))
     elif not b1.real and b1.imag:  # imaginary base
         val10 = _std.to_10(real, b1, sgn, sep)  # imag base values have no imag part
     else:  # complex base, base 0
@@ -212,7 +212,7 @@ def guess(n, sgn='-', sep='.'):
 
 def numDigits(base):
     "returns the number of digits a base uses"
-    if base.imag: base = base * (base.real - base.imag); base = base.real
+    if base.imag: base = base * cmplx(base.real, -base.imag); base = base.real
     base = abs(base)  # can't use .conjugate(), gmpy2 2.0.8 will crash
 
     E, one = ValueError('invalid base'), decml(1)
@@ -224,6 +224,6 @@ def numDigits(base):
 
 def base_prec(prec, newbase, oldbase=2):
     "gives precision in new base"
-    if newbase.imag: newbase *= (newbase.real - newbase.imag)
-    if oldbase.imag: oldbase *= (oldbase.real - oldbase.imag)
+    if newbase.imag: newbase *= cmplx(newbase.real, -newbase.imag)
+    if oldbase.imag: oldbase *= cmplx(oldbase.real, -oldbase.imag)
     return int(prec * abs(_sup.log(abs(oldbase), abs(newbase))))
