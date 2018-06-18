@@ -62,25 +62,17 @@ def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
     if not num: return _sup.digitSet[0]
 
     # parse input
-    if type(num).__name__ in _sup.str_types:
-        real, imag = num, 0  # string types
-    elif type(num) == tuple:
-        real, imag = num[0], num[1]  # tuple
-    else:
-        try: real, imag = num.real, num.imag  # numeric types, named tuple
-        except AttributeError: real, imag = num, 0  # anything else
-
-    # parse base inputs
-    bases = []
-    for b in (b1, b2):
-        if type(b).__name__ in _sup.str_types:  # string input
-            if 'i' in b or 'j' in b: b = cmplx(b.replace('i', 'j'))
-            else: b = decml(b)
-        bases.append(b)
-    b1, b2 = bases
+    real, imag = _sup.parseInput(num)
+    b1, b2 = _sup.parseBase(b1), _sup.parseBase(b2)
 
     # convert input from base b1 to base ten (outputs here are numerical)
-    if b1.real and not b1.imag:  # real base
+    if _sup.str_(b1).lower() in _nsd.nstd_bases:  # custom base
+        nsd_to = _nsd.nstd_bases.get(_sup.str_(b1).lower())[1]
+        res = nsd_to(real, sgn, sep)
+        try: ult = nsd_to(imag, sgn, sep)
+        except AttributeError: ult = ''
+        val10 = res if not ult else (res + ult * cmplx(0, 1))
+    elif b1.real and not b1.imag:  # real base
         valr = _std.to_10(real, b1, sgn, sep)
         vali = _std.to_10(imag, b1, sgn, sep)
         val10 = valr if not vali else (valr + vali * cmplx(0, 1))
@@ -94,7 +86,11 @@ def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
     if as_numeric and b2 == 10: return val10
 
     # convert base ten value to base b2 (outputs here will be lists)
-    if b2.real and not b2.imag:  # real base
+    if _sup.str_(b2).lower() in _nsd.nstd_bases:  # custom base
+        to_nsd = _nsd.nstd_bases.get(_sup.str_(b2).lower())[0]
+        ansr = to_nsd(val10.real, sgn, sep)
+        ansi = to_nsd(val10.imag, sgn, sep)
+    elif b2.real and not b2.imag:  # real base
         ansr = _std.to_rb(val10.real, b2, sgn, sep)
         ansi = _std.to_rb(val10.imag, b2, sgn, sep)
     elif not b2.real and b2.imag:  # imaginary base
@@ -105,29 +101,24 @@ def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
         raise E
 
     # convert to string
-    res = _sup.lst_to_str(ansr, sgn, sep)
-    ult = _sup.lst_to_str(ansi, sgn, sep)
+    try:
+        res = _sup.lst_to_str(ansr, sgn, sep)
+        ult = _sup.lst_to_str(ansi, sgn, sep)
+    except TypeError:  # custom base return is a string?
+        res, ult = ansr, ansi
     result = res if ult in _sup.zero_types else numStor(res, ult)
     return result
 
 def toBase(x, b, sgn='-', sep='.'):
     "convert a base ten numeric value x to base b"
     # same as the second half of rebase
-
-    if type(x).__name__ in _sup.str_types:
-        if 'i' in x or 'j' in x: x = cmplx(x.replace('i', 'j'))
-        else: x = decml(x)
-
-    if type(b).__name__ in _sup.str_types:
-        if _sup.str_(b).lower() in _nsd.nstd_bases: pass
-        elif 'i' in b or 'j' in b: b = cmplx(b.replace('i', 'j'))
-        else: b = decml(b)
+    x, b = _sup.parseBase(x), _sup.parseBase(b)
     
     lts, tr, ti = _sup.lst_to_str, _std.to_rb, _std.to_ib
     E = ValueError('invalid base')
     if b in (1, 0):
         raise E
-    elif _sup.str_(b).lower() in _nsd.nstd_bases:
+    elif _sup.str_(b).lower() in _nsd.nstd_bases:  # custom base
         to_nsd = _nsd.nstd_bases.get(_sup.str_(b).lower())[0]
         res = to_nsd(x.real, sgn, sep)
         ult = to_nsd(x.imag, sgn, sep)
@@ -144,33 +135,22 @@ def toBase(x, b, sgn='-', sep='.'):
 def toTen(x, b, sgn='-', sep='.'):
     "convert a string x in base b to base ten"
     # same as the first half of rebase
-
-    if type(x).__name__ in _sup.str_types:
-        real, imag = x, 0  # string types
-    elif type(x) == tuple:
-        real, imag = x[0], x[1]  # tuple
-    else:
-        try: real, imag = x.real, x.imag  # numeric types, named tuple
-        except AttributeError: real, imag = x, 0  # anything else
-
-    if type(b).__name__ in _sup.str_types:
-        if _sup.str_(b).lower() in _nsd.nstd_bases: pass
-        elif 'i' in b or 'j' in b: b = cmplx(b.replace('i', 'j'))
-        else: b = decml(b)
+    real, imag = _sup.parseInput(x)
+    b = _sup.parseBase(b)
 
     E = ValueError('invalid base')
-    if b in (1, 0):
+    if b in (1, 0):  # invalid bases
         raise E
-    elif _sup.str_(b).lower() in _nsd.nstd_bases:
+    elif _sup.str_(b).lower() in _nsd.nstd_bases:  # custom base
         nsd_to = _nsd.nstd_bases.get(_sup.str_(b).lower())[1]
         res = nsd_to(real, sgn, sep)
         try: ult = nsd_to(imag, sgn, sep)
         except AttributeError: ult = ''
-        result = res if not ult else (res + ult * 1j)
+        result = res if not ult else (res + ult * cmplx(0, 1))
     elif b.real and not b.imag:  # real base
         res = _std.to_10(real, b, sgn, sep)
         ult = _std.to_10(imag, b, sgn, sep)
-        result = res if not ult else (res + ult * 1j)
+        result = res if not ult else (res + ult * cmplx(0, 1))
     elif not b.real and b.imag:  # imaginary base
         result = _std.to_10(real, b, sgn, sep)
     else: raise E
@@ -222,7 +202,7 @@ def numDigits(base):
     elif base > 1: return int(_sup.ceil(base))
     else: raise E 
 
-def base_prec(prec, newbase, oldbase=2):
+def basePrec(prec, newbase, oldbase=2):
     "gives precision in new base"
     if newbase.imag: newbase *= cmplx(newbase.real, -newbase.imag)
     if oldbase.imag: oldbase *= cmplx(oldbase.real, -oldbase.imag)

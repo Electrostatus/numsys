@@ -232,7 +232,7 @@ def lst_to_str(lst, sgn='-', sep='.'):
     return clean(num_str, gn, ep)
 
 def parseInput(x):
-    "parse a input to real, imag parts"
+    "parse a generic input to real, imag parts"
     name = type(x).__name__
     if name in str_types:
         real, imag = x, 0  # string types
@@ -244,7 +244,7 @@ def parseInput(x):
     return real, imag
 
 def parseBase(b):
-    "parse a base input"
+    "parse a numeric input"
     name = type(b).__name__
     if name in str_types:
         b = str_(b).lower()
@@ -257,10 +257,10 @@ def parseBase(b):
     return b
 
 # constants ---------------------------------------------------------------
-version = '0.9.8'
+version = '0.9.9'
 maxchr += 1  # base 0 uses no characters, so all of unicode is valid
 prec = setPrec(100)   # precision (in base two)
 digitSet = defaultDigitSet()
-zero_types = [0, [], [0], digitSet[0], str_(), '']
+zero_types = [0, [], [0], digitSet[0], str_(), '']  # this is reset with setDigitSet 
 str_types = ('str', 'unicode')
 
