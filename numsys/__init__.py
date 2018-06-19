@@ -161,6 +161,7 @@ def inDecimal(num, sgn='-', sep='.', as_str=False):
     Leaves num as is, but converts each symbol to its value in base 10
     will return a list unless as_str is True
     """
+    sgn, sep = _sup.str_(sgn), _sup.str_(sep)
     lst = _sup.str_to_lst(num, sgn, sep)
 
     if as_str:
@@ -171,14 +172,14 @@ def inDecimal(num, sgn='-', sep='.', as_str=False):
         if sep in lst:  # should be one block; 5.6, not 5:.:6
             loc = lst.index(sep); lst.pop(loc)
             whol = lst.pop(loc - 1); frac = lst.pop(loc - 1)
-            lst.insert(loc - 1, sep.join([sup.str_(whol), sup.str_(frac)]))
+            lst.insert(loc - 1, sep.join([_sup.str_(whol), _sup.str_(frac)]))
 
         # if the number is negative, should be one block; -num, not -:num
         if sgn in lst:
             lst.pop(0); num = lst.pop(0)
-            lst.insert(0, sup.str_().join([sgn, sup.str_(num)]))
+            lst.insert(0, _sup.str_().join([sgn, _sup.str_(num)]))
             
-        in_deci = [sup.str_(j) for j in lst]
+        in_deci = [_sup.str_(j) for j in lst]
         output = split[0].join(in_deci)
     else: output = lst
     return output
@@ -191,7 +192,7 @@ def guess(n, sgn='-', sep='.'):
     return max(lst) + 1
 
 def numDigits(base):
-    "returns the number of digits a base uses"
+    "returns the number of characters a base uses"
     if base.imag: base = base * cmplx(base.real, -base.imag); base = base.real
     base = abs(base)  # can't use .conjugate(), gmpy2 2.0.8 will crash
 
@@ -200,7 +201,22 @@ def numDigits(base):
     elif 0 < base < 1: return int(_sup.ceil(one / base))
     elif base == 1: return 1  # same with this one
     elif base > 1: return int(_sup.ceil(base))
-    else: raise E 
+    else: raise E
+
+def availableBases():  # does this make any sense to have?
+    "print out avaiable bases"
+    maxchr = _sup.maxchr
+    line = 'available bases:'
+    line += '\nreal bases -{} < -1 and 1 < {}'.format(maxchr, maxchr)
+    line += '\nreal bases -1 < -1/{} and 1/{} < 1'.format(maxchr, maxchr)
+
+    sqmxc = int(maxchr ** 0.5)
+    line += '\nimag bases -{}j < 1j and 1j < {}j'.format(sqmxc, sqmxc)
+    line += '\nimag bases -1j < -1/{}j and 1/{}j < 1j'.format(sqmxc, sqmxc)
+
+    line += '\ncustom bases:'
+    for i in _nsd.nstd_bases: line += '\n\t{}'.format(_sup.str_(i).lower())
+    print(line)
 
 def basePrec(prec, newbase, oldbase=2):
     "gives precision in new base"
