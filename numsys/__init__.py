@@ -3,7 +3,7 @@ import standard as _std
 import nonstandard as _nsd
 
 
-__doc__ = """A number rebasing system, version {}
+__doc__ = """A number base conversion system, version {}
 
     can convert any real or complex number
     to a base of any real or imaginary value

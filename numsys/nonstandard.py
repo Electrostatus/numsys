@@ -87,7 +87,7 @@ def to_ro(n, sgn='-', sep='.'):
     #if not n: return 'nulla'  # zero extension
     romu, i = [], abs(n)
     for r, j in _rmap:
-        k = i // j; i -= j * k
+        k = int(i // j); i -= j * k
         romu.append(r * k)
     return ''.join(romu)
 
