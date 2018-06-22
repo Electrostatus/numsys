@@ -6,7 +6,7 @@ setup(name = 'numsys',
       description = 'numeral systems - conversion module of number bases',
       author = 'Electrostatus',
       url = 'http://github.com/Electrostatus/numsys',
-      py_modules = ['numsys'],
+      packages = ['numsys'],
       keywords = 'number base numeral system',
       classifiers = [
         'Operating System :: OS Independent',
