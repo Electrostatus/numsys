@@ -9,7 +9,7 @@ __doc__ = """A number base conversion system, version {}
     to a base of any real or imaginary value
 
     invalid bases are abs(base) == 1 or == 0
-    complex bases are not implemented
+    complex bases are unknown
 	
     The number of available characters are {:,}.
     If a base requires more characters, then the system will return a list
@@ -116,16 +116,16 @@ def toBase(x, b, sgn='-', sep='.'):
     
     lts, tr, ti = _sup.lst_to_str, _std.to_rb, _std.to_ib
     E = ValueError('invalid base')
-    if b in (1, 0):
+    if b in (1, 0):                                # invalid bases
         raise E
     elif _sup.str_(b).lower() in _nsd.nstd_bases:  # custom base
         to_nsd = _nsd.nstd_bases.get(_sup.str_(b).lower())[0]
         res = to_nsd(x.real, sgn, sep)
         ult = to_nsd(x.imag, sgn, sep)
-    elif b.real and not b.imag:  # real base
+    elif b.real and not b.imag:                    # real bases
         res = lts(tr(x.real, b, sgn, sep), sgn, sep)
         ult = lts(tr(x.imag, b, sgn, sep), sgn, sep)
-    elif not b.real and b.imag:  # imaginary base
+    elif not b.real and b.imag:                    # imaginary bases
         res = lts(ti(cmplx(x.real, x.imag), b, sgn, sep), sgn, sep)
         ult = lts([0], sgn, sep)
     else: raise E
@@ -139,19 +139,19 @@ def toTen(x, b, sgn='-', sep='.'):
     b = _sup.parseBase(b)
 
     E = ValueError('invalid base')
-    if b in (1, 0):  # invalid bases
+    if b in (1, 0):                                # invalid bases
         raise E
-    elif _sup.str_(b).lower() in _nsd.nstd_bases:  # custom base
+    elif _sup.str_(b).lower() in _nsd.nstd_bases:  # custom bases
         nsd_to = _nsd.nstd_bases.get(_sup.str_(b).lower())[1]
         res = nsd_to(real, sgn, sep)
         try: ult = nsd_to(imag, sgn, sep)
         except AttributeError: ult = ''
         result = res if not ult else (res + ult * cmplx(0, 1))
-    elif b.real and not b.imag:  # real base
+    elif b.real and not b.imag:                    # real bases
         res = _std.to_10(real, b, sgn, sep)
         ult = _std.to_10(imag, b, sgn, sep)
         result = res if not ult else (res + ult * cmplx(0, 1))
-    elif not b.real and b.imag:  # imaginary base
+    elif not b.real and b.imag:                    # imaginary bases
         result = _std.to_10(real, b, sgn, sep)
     else: raise E
     return result
