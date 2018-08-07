@@ -16,6 +16,10 @@ representation in a non-positional numeral system (roman, factorial)
 
 A non-positional numeral system is one where values do not conform to the positional system. These can be alphabetic, like Roman numerals, or a mixed base system, like factorial. Also included are positional-like bases that have limited representation; not all values can be shown. Examples of these are base one and minus one.
 
+digits
+------
+The first one hundred digits used (in order) are 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ \t\n\r\x0b\x0c. After this, which digits are used will be dependent on your system encoding. However, general order will be from the lowest Unicode plane to the highest (skipping already seen digits).
+
 
 references
 ----------
