@@ -8,20 +8,19 @@ __doc__ = """A number base conversion system, version {}
     can convert any real or complex number
     to a base of any real or imaginary value
 
-    invalid bases are abs(base) == 1 or == 0
-    complex bases are unknown
+    invalid bases are abs(base) == 1 or abs(base) == 0
 	
     The number of available characters are {:,}.
     If a base requires more characters, then the system will return a list
     containing the positional values in base ten.
 
-    If not using gmpy2 or mpmath, conversion to imaginary bases or of compelx
+    If not using gmpy2 or mpmath, conversion to imaginary bases or of complex
     values may fall to custom complex class based on Python's decimal module.
     The decimal module will also be used if converting to a float base or
     conversion of a float-like value should mpmath or gmpy2 is not found.
 
     sgn - what character the negative sign is (default '-')
-    sep - what character the radix point (fractional seperator) is (default '.')
+    sep - what character the radix point (fractional separator) is (default '.')
     """.format(_sup.version, _sup.maxchr)
 
 __all__ = ['rebase', 'guess', 'inDecimal', 'numDigits', # this file
@@ -57,7 +56,8 @@ def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
            - namedtuple if imaginary value (see numStor)
            - int, long, float, complex, cmplx or decml type
              if as_numeric is True and b2 is 10 (regardless of digitSet order)
-    """
+    """  # de-duplicate this using toTen, toBase?
+	
     # if the number is zero, why do any math? return a zero
     if not num: return _sup.digitSet[0]
 

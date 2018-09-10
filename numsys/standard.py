@@ -5,7 +5,7 @@ log, floor, ceil = _sup.log, _sup.floor, _sup.ceil
 cmplx, decml = _sup.cmplx, _sup.decml
 
 
-def to_zb(num, base, sgn='-'):  # to integer base (Z)
+def to_zb(num, base, sgn='-', sep='.'):  # to integer base (Z)
     """
     converts an integer from base ten to base (integer and abs(base) > 1)
     returns a list
@@ -29,7 +29,7 @@ def to_pb(num, base, sgn='-', sep='.'):  # to Positive base
     """
     converts a real in base 10 to base (real and > 1)
     returns a list
-    """
+    """  # see Ref. A from README
     # use integer conversion when both are integers (faster)
     if int(num) == num and int(base) == base: return to_zb(num, base, sgn)
     
@@ -68,7 +68,7 @@ def to_nb(num, base, sgn='-', sep='.'):  # to Negative base
     """
     converts a real from base 10 to base (real and < -1)
     returns a list
-    """
+    """  # see Ref. B from README
     # use integer conversion when both are integers (faster)
     if int(num) == num and int(base) == base: return to_zb(num, base, sgn)
     
@@ -150,7 +150,7 @@ def to_ib(num, base, sgn='-', sep='.'):  # to Imaginary base
     converts a complex number from base ten to imaginary base
     where base.real == 0 and base.imag != 1 or 0
     returns a list
-    """
+    """  # see Refs. C, D from README
     E = ValueError('invalid base')
     if base.real != 0:
         raise E
@@ -204,7 +204,7 @@ def to_10(num, base, sgn='-', sep='.'):
     converts a number from given base to base ten
     not valid for nonstandard bases
     """
-    # verifiy input
+    # verify input
     if type(num).__name__ in _sup.str_types:
         num = _sup.str_to_lst(num, sgn, sep)
     elif type(num) == list: pass

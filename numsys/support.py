@@ -257,7 +257,7 @@ def parseBase(b):
     return b
 
 # constants ---------------------------------------------------------------
-version = '0.9.A'
+version = '0.9.A'  # next is either 0.9.B or 1.00.00 (NOT 1.0.0!)
 maxchr += 1  # base 0 uses no characters, so all of unicode is valid
 prec = setPrec(100)   # precision (in base two)
 digitSet = defaultDigitSet()

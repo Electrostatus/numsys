@@ -23,14 +23,18 @@ The first one hundred digits used (in order) are ``0123456789ABCDEFGHIJKLMNOPQRS
 
 references
 ----------
-positive real base converison: ([link](https://doi.org/10.1007/BF02020331)) A. Rényi, "Representations for real numbers and their ergodic properties", *Acta Mathematica Academic Sci. Hungar.*, **1957**, vol. 8, pp. 433-493
-negative real base conversion: ([link](https://doi.org/10.1515/INTEG.2009.023))  S. Ito, T. Sadahiro, "Beta-expansions with negative bases", *Integers*, **2009**, vol. 9, pp. 239-259
-imaginary base conversion: ([link](https://arxiv.org/abs/1701.04506)) P. Herd, "Imaginary Number Bases"
+positive real base conversion: (`Ref. A`_) A. Rényi, "Representations for real numbers and their ergodic properties", *Acta Mathematica Academic Sci. Hungar.*, **1957**, vol. 8, pp. 433-493
+
+negative real base conversion: (`Ref. B`_)  S. Ito, T. Sadahiro, "Beta-expansions with negative bases", *Integers*, **2009**, vol. 9, pp. 239-259
+
+base -10: (Ref. D) V. Grünwald, "Intorno all'aritmetica dei sistemi numerici a base negativa con particolare riguardo al sistema numerico a base negativo-decimale per lo studio delle sue analogie coll'aritmetica ordinaria (decimale)", *Giornale di matematiche di Battaglini*, **1885**, vol. 23, pp. 203-221
+
+base 2i: (`Ref. C`_) D. Knuth, "An Imaginary Number System", *Communications of the ACM*, **1960**, vol. 3, pp. 245-247
+
+imaginary base conversion/summary: (`Ref. D`_) P. Herd, "Imaginary Number Bases"
 
 
-
-
-
-
-
-
+.. _`Ref. A`: https://doi.org/10.1007/BF02020331
+.. _`Ref. B`: https://doi.org/10.1515/INTEG.2009.023
+.. _`Ref. C`: https://doi.org/10.1145/367177.367233
+.. _`Ref. D`: https://arxiv.org/abs/1701.04506
