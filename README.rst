@@ -24,9 +24,13 @@ The first one hundred digits used (in order) are ``0123456789ABCDEFGHIJKLMNOPQRS
 References
 ----------
 positive real base conversion: (`Ref. A`_) A. Rényi, "Representations for real numbers and their ergodic properties", *Acta Mathematica Academic Sci. Hungar.*, **1957**, vol. 8, pp. 433-493
+
 negative real base conversion: (`Ref. B`_)  S. Ito, T. Sadahiro, "Beta-expansions with negative bases", *Integers*, **2009**, vol. 9, pp. 239-259
+
 base 2i: (`Ref. C`_) D. Knuth, "An Imaginary Number System", *Communications of the ACM*, **1960**, vol. 3, pp. 245-247
+
 base -10: (Ref. D) V. Grünwald, "Intorno all'aritmetica dei sistemi numerici a base negativa con particolare riguardo al sistema numerico a base negativo-decimale per lo studio delle sue analogie coll'aritmetica ordinaria (decimale)", *Giornale di matematiche di Battaglini*, **1885**, vol. 23, pp. 203-221
+
 imaginary base conversion/summary: (`Ref. E`_) P. Herd, "Imaginary Number Bases"
 
 
