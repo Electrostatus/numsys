@@ -123,8 +123,11 @@ def toBase(x, b, sgn='-', sep='.'):
         res = to_nsd(x.real, sgn, sep)
         ult = to_nsd(x.imag, sgn, sep)
     elif b.real and not b.imag:                    # real bases
-        res = lts(tr(x.real, b, sgn, sep), sgn, sep)
-        ult = lts(tr(x.imag, b, sgn, sep), sgn, sep)
+        if not x.imag:
+            res, ult = lts(tr(x, b, sgn, sep), sgn, sep), 0
+        else:
+            res = lts(tr(x.real, b, sgn, sep), sgn, sep)
+            ult = lts(tr(x.imag, b, sgn, sep), sgn, sep)
     elif not b.real and b.imag:                    # imaginary bases
         res = lts(ti(cmplx(x.real, x.imag), b, sgn, sep), sgn, sep)
         ult = lts([0], sgn, sep)

@@ -250,7 +250,9 @@ def parseBase(b):
         b = str_(b).lower()
         if b in nstd.nstd_bases: pass
         elif 'i' in b or 'j' in b: b = cmplx(b.replace('i', 'j'))
-        else: b = decml(b); a = int(b); b = a if a == b else b
+        else:
+            try: b = int(b)
+            except ValueError: b = decml(b)
     elif name == 'tuple':
         b = cmplx(b[0], b[1])
     else: pass

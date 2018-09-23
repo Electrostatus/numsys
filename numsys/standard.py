@@ -138,7 +138,7 @@ def to_rb(num, base, sgn='-', sep='.'):  # to Real base
     ties to_zb, to_pb, to_nb, to_vb into one function
     """
     E = ValueError('invalid base')
-    num, base = decml(num), decml(base)
+    #num, base = decml(num), decml(base)
     if base < -1: ans = to_nb(num, base, sgn, sep)
     elif 0 < abs(base) < 1: ans = to_vb(num, base, sgn, sep)
     elif base > 1: ans = to_pb(num, base, sgn, sep)
