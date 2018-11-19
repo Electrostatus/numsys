@@ -34,6 +34,7 @@ cmplx = _sup.cmplx
 setPrec = _sup.setPrec
 setDigitSet = _sup.setDigitSet
 numStor = _sup.numStor
+VERSION = _sup.version
 
 # from nonstandard file
 roman = _nsd.to_ro
