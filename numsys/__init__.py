@@ -65,43 +65,44 @@ def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
     real, imag = _sup.parseInput(num)
     b1, b2 = _sup.parseBase(b1), _sup.parseBase(b2)
 
+    E1 = ValueError('invalid input base')
+    E2 = ValueError('invalid output base')
     # convert input from base b1 to base ten (outputs here are numerical)
-    if _sup.str_(b1).lower() in _nsd.nstd_bases:  # custom base
+    if b1 in (1, 0):                                # invalid bases
+        raise E1
+    elif _sup.str_(b1).lower() in _nsd.nstd_bases:  # custom bases
         nsd_to = _nsd.nstd_bases.get(_sup.str_(b1).lower())[1]
         res = nsd_to(real, sgn, sep)
         try: ult = nsd_to(imag, sgn, sep)
         except AttributeError: ult = ''
         val10 = res if not ult else (res + ult * cmplx(0, 1))
-    elif b1.real and not b1.imag:  # real base
+    elif b1.real and not b1.imag:                   # real bases
         valr = _std.to_10(real, b1, sgn, sep)
         vali = _std.to_10(imag, b1, sgn, sep)
         val10 = valr if not vali else (valr + vali * cmplx(0, 1))
-    elif not b1.real and b1.imag:  # imaginary base
-        val10 = _std.to_10(real, b1, sgn, sep)  # imag base values have no imag part
+    elif not b1.real and b1.imag:                   # imaginary bases
+        val10 = _std.to_10(real, b1, sgn, sep)  # i base values have no i part
     else:  # complex base, base 0
-        E = ValueError('invalid input base')
-        raise E
+        raise E1
 
     # return as a numeric type
     if as_numeric and b2 == 10: return val10
 
     # convert base ten value to base b2 (outputs here will be lists)
-    if _sup.str_(b2).lower() in _nsd.nstd_bases:  # custom base
+    if _sup.str_(b2).lower() in _nsd.nstd_bases:  # custom bases
         to_nsd = _nsd.nstd_bases.get(_sup.str_(b2).lower())[0]
         ansr = to_nsd(val10.real, sgn, sep)
         ansi = to_nsd(val10.imag, sgn, sep)
-    elif b2.real and not b2.imag:  # real base
+    elif b2.real and not b2.imag:                 # real bases
         ansr = _std.to_rb(val10.real, b2, sgn, sep)
         ansi = _std.to_rb(val10.imag, b2, sgn, sep)
-    elif not b2.real and b2.imag:  # imaginary base
+    elif not b2.real and b2.imag:                 # imaginary bases
         ansr = _std.to_ib(cmplx(val10.real, val10.imag), b2, sgn, sep)
         ansi = [0]
     else:  # complex base, base 0
-        E = ValueError('invalid output base')
-        raise E
+        raise E2
 
-    # convert to string
-    try:
+    try:  # to convert to string
         res = _sup.lst_to_str(ansr, sgn, sep)
         ult = _sup.lst_to_str(ansi, sgn, sep)
     except TypeError:  # custom base return is a string?
@@ -118,7 +119,7 @@ def toBase(x, b, sgn='-', sep='.'):
     E = ValueError('invalid base')
     if b in (1, 0):                                # invalid bases
         raise E
-    elif _sup.str_(b).lower() in _nsd.nstd_bases:  # custom base
+    elif _sup.str_(b).lower() in _nsd.nstd_bases:  # custom bases
         to_nsd = _nsd.nstd_bases.get(_sup.str_(b).lower())[0]
         res = to_nsd(x.real, sgn, sep)
         ult = to_nsd(x.imag, sgn, sep)
