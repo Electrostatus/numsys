@@ -92,7 +92,7 @@ def to_nb(num, base, sgn='-', sep='.'):  # to Negative base
         lst.extend([0, sep])
         lst.extend(([0] * -int(P)))
 
-    #this appears to work for negative bases so I'm going with it
+    # this appears to work for negative bases so I'm going with it
     prc = int(prc * log(2, abs(base)))
     prc = -1 if (P - prc) >= 0 else (P - prc)
 
