@@ -60,8 +60,9 @@ def to_pb(num, base, sgn='-', sep='.'):  # to Positive base
         X = T(X)
         if P == 0 and sep not in lst:  # don't add it if its already there!
             lst.append(sep)
-        lst.append(d)  # store digit
-        P -= 1
+        if d == base: lst.insert(-1, 1)       # this happens with .1, base 10
+        else: lst.append(d)  # store digit    # or with 1/b, 1/(b**n), base b
+        P -= 1                                # check ref if above is mentioned
     return lst
 
 def to_nb(num, base, sgn='-', sep='.'):  # to Negative base
@@ -90,7 +91,7 @@ def to_nb(num, base, sgn='-', sep='.'):  # to Negative base
     
     if P <= 0:  # starting with a fractional value
         lst.extend([0, sep])
-        lst.extend(([0] * -int(P)))
+        #lst.extend(([0] * -int(P)))  # puts small values off a power
 
     # this appears to work for negative bases so I'm going with it
     prc = int(prc * log(2, abs(base)))
