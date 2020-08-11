@@ -5,6 +5,12 @@ import standard as _std
 import nonstandard as _nsd
 #import __init__ as _nys
 
+def rnd(n, d=5):
+    "relative rounding: 9.0123456789e-307 -> 9.01235e-307"
+    ln = _sup.log(abs(n), 10) if n != 0 else 0
+    return round(float(n), -int(_sup.floor(ln)) + d)
+
+
 class testNumsys(unittest.TestCase):
     longMessage = True
 
@@ -44,21 +50,15 @@ class testNumsys(unittest.TestCase):
         # select random valid integer bases
         mb = _sup.maxchr
         bases = filter(lambda x: abs(x) > 1, range(-mb, mb + 1))
+        _sup.setPrec(1500)  # will need more precision for this test
 
-        def rnd(n, d=5):
-            #return round(float(n), -int(_sup.floor(_sup.log(abs(n), 10))) + d)
-            ln = _sup.log(abs(n), 10) if n != 0 else 0
-            return round(float(n), -int(_sup.floor(ln)) + d)
-
-        _sup.setPrec(1000)  # will need more precision for this test
-
-        for b in random.sample(list(bases), max(250, mb // 4000)):
+        for b in random.sample(list(bases), max(125, mb // 8000)):
             for i in reals:
                 j = _std.to_10(_std.to_rb(i, b), b)
 
                 rnd_i = rnd(i)  # within reason, floats are not always exact
                 rnd_j = rnd(j)
-                self.assertEqual(rnd_i, rnd_j, msg=mesg.format(b, i, j))
+                self.assertEqual(rnd_i, rnd_j, msg=mesg.format(b, i, float(j)))
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
