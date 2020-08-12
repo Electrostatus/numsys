@@ -4,6 +4,7 @@
 # imports -----------------------------------------------------------------
 from sys import maxunicode as maxchr
 from collections import namedtuple
+import warnings
 import string
 
 try:  # to look for better installed modules
@@ -62,6 +63,7 @@ except ImportError:  # failing those, use the built-in modules
 import nonstandard as nstd  # used in parseBase
 
 # functions ---------------------------------------------------------------
+warnings.simplefilter('always')  # warnings in this should be rare (hopefully!)
 
 # unicode/str for Python 2/3
 try:          str_ = unicode
@@ -218,13 +220,13 @@ def lst_to_str(lst, sgn='-', sep='.'):
     # check if radix or negative sign shows up when it shouldn't
     catch = False  # or more times than it should
     if num_str.count(sgn) > 1 or (not has_sgn and num_str.count(sgn)):
-        W = "output contains negative sign in use as a value"
+        msg = "output contains negative sign in use as a value"
         catch = True
     if num_str.count(sep) > 1 or (not has_sep and num_str.count(sep)):
-        W = "output contains a radix sign in use as a value"
+        msg = "output contains a radix sign in use as a value"
         catch = True
-    #if catch:
-    #    # put a warning here instead?
+    if catch:
+        warnings.warn(msg, stacklevel=3)  # ex: rebase(1114112*75, 10, 1114112)
     #    return ([sgn] if has_sgn else []) + lst  # return as a list if so
 
     gn = sgn if has_sgn else has_sgn

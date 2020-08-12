@@ -40,7 +40,7 @@ class testNumsys(unittest.TestCase):
                 ' with input {} (output: {})')
 
         # select multiple random reals
-        reals = [-0.1, 0.2, -0.3, 0.4, 0]
+        reals = [-0.1, 0.2, -0.3, 0.4, 0, 75, -18985410]
         for i in range(10):
             reals.append(random.random() * random.choice([-1, 1]))
         for i in range(10):
@@ -53,6 +53,37 @@ class testNumsys(unittest.TestCase):
         _sup.setPrec(1500)  # will need more precision for this test
 
         for b in random.sample(list(bases), max(125, mb // 8000)):
+            for i in reals:
+                j = _std.to_10(_std.to_rb(i, b), b)
+
+                rnd_i = rnd(i)  # within reason, floats are not always exact
+                rnd_j = rnd(j)
+                self.assertEqual(rnd_i, rnd_j, msg=mesg.format(b, i, float(j)))
+
+
+    def test_real_real_identity(self):
+        "real base conversion with reals from base 10 to base B to 10"
+        mesg = ('base 10 to base {} to base 10 conversion failed'
+                ' with input {} (output: {})')
+
+        # select multiple random reals
+        reals = [-0.1, 0.2, -0.3, 0.4, 0, -123, 9610772]
+        for i in range(10): reals.append(random.randint(-5000, 5000))
+        for i in range(10):
+            reals.append(random.random() * random.choice([-1, 1]))
+        for i in range(10):
+            r = random.random() * 10 ** random.randint(-300, 300)
+            reals.append(r * random.choice([-1, 1]))
+
+        # select random valid real bases
+        mb = _sup.maxchr
+        mx = max(125, mb // 8000)
+        rnd_bases = [round(random.uniform(-mb, mb), 3) for i in range(mx)]
+        
+        bases = filter(lambda x: abs(x) not in [1, 0], rnd_bases)
+        _sup.setPrec(1500)  # will need more precision for this test
+
+        for b in bases:
             for i in reals:
                 j = _std.to_10(_std.to_rb(i, b), b)
 
