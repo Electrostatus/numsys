@@ -88,6 +88,11 @@ def unique(seq):
     return [x for x in seq if not (x in seen or sead(x))]
     # return list(dict.fromkeys(seq))  # valid for python 3.7 and higher
 
+def rround(n, d=5):
+    "relative float rounding: 9.0123456789e-307 -> 9.01235e-307"
+    ln = log(abs(n), 10) if n != 0 else 0
+    return round(float(n), -int(floor(ln)) + d)
+
 def defaultDigitSet(full=True):
     "returns the default digit set as a list"
     digits = list(string.printable.swapcase())
