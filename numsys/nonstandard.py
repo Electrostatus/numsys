@@ -175,4 +175,4 @@ def fc_to(n, sgn='-', sep='.'):
 nstd_bases['factorial'] = [to_fc, fc_to]
 nstd_bases['f'] = [to_fc, fc_to]
 
-    
+# add primorial and fibonacci bases?

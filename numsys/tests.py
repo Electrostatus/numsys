@@ -86,5 +86,38 @@ class testNumsys(unittest.TestCase):
                 rnd_j = _sup.rround(j)
                 self.assertEqual(rnd_i, rnd_j, msg=mesg.format(b, i, float(j)))
 
+    def test_imag_cmpx_identity(self):
+        "imag base conversion with complex from base 10 to base B to 10"
+        # this tests complex values moreso than conversion
+        # as the three tests above deal with the conversion functions
+        mesg = ('base 10 to base {} to base 10 conversion failed'
+                ' with input {} (output: {})')
+
+        # random complexes
+        cmpx = [1j]
+        for i in range(25):
+            r = random.random() * 10 ** random.randint(-12, 12)
+            j = random.random() * 10 ** random.randint(-12, 12)
+            cpx = complex(r * random.choice([-1, 1]),
+                          j * random.choice([-1, 1]))
+            cmpx.append(cpx)
+
+        # random bases
+        mb = int(_sup.maxchr ** .5)
+        mx = max(70, mb // 16000)
+        rnd_bases = [round(random.uniform(-mb, mb), 3) for i in range(mx)]
+        bases = filter(lambda x: abs(x) not in [1, 0], rnd_bases)
+
+        for b in bases:
+            b = complex(0, b)
+            for i in cmpx:
+                j = complex(_std.to_10(_std.to_ib(i, b), b))
+
+                ir = _sup.rround(i.real, 3); ij = _sup.rround(i.imag, 3)
+                jr = _sup.rround(j.real, 3); jj = _sup.rround(j.imag, 3)
+                rnd_i = complex(ir, ij)
+                rnd_j = complex(jr, jj)
+                self.assertEqual(rnd_i, rnd_j, msg=mesg.format(b, i, j))
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
