@@ -54,19 +54,30 @@ def to_ze(x, sgn='-', sep='.'):
     "converts any number in base ten to base zero"
     return ''
 
+_zn = [0]
+class BaseZero(ZeroDivisionError): pass  # ice cream koan
+
 def ze_to(x, sgn='-', sep='.'):
     "converts a base zero value to base ten"
     E1 = SyntaxError('base zero does not use any characters')
-    class BaseZero(ZeroDivisionError): pass  # ice cream koan
+    global _zn
     
     E2_errs = ['Makes you think, doesn\'t it?', 'Wait, what?', 'Crazy, huh?', 
                'It\'s somewhat Zen, but not really', 'It\'s utter nonsense',
                'You thought this would actually return something?', 'error!',
                '...Clever girl *killed by raptors*', 'Confused? Try again.',
+               'You spent your nickle, we\'re done!', ('Well summer\'s over,'
+               ' the bonfires are dying down, the explosives are packed '#mst3k
+               'away and the last rabid dog has been shot.'), 'Huh?!??1?one',
+               'Try our sister base, base negative zero!', 'error? err-ror?',
+               'Am I an ice cream koan? or am I not an ice cream koan?',
                ]
     try:
-        n = hash(urandom(9))
-        E2 = BaseZero(E2_errs[int(abs(n)) % len(E2_errs)])
+        n = int(abs(hash(urandom(9)))) % len(E2_errs)
+        while n in _zn: n = int(abs(hash(urandom(9)))) % len(E2_errs)
+        _zn.append(n)  # random, but no immediate repeats
+        if len(_zn) > 3: _zn = _zn[-3:]
+        E2 = BaseZero(E2_errs[n])
     except Exception:
         E2 = BaseZero(E2_errs[5])
         
