@@ -60,7 +60,8 @@ except ImportError:  # failing those, use the built-in modules
 ##    decml, cmplx = float, complex
 ##    backend = None
 
-import nonstandard as nstd  # used in parseBase
+try: import nonstandard as nstd  # used in parseBase
+except ImportError: from numsys import nonstandard as nstd 
 
 # functions ---------------------------------------------------------------
 warnings.simplefilter('always')  # warnings in this should be rare (hopefully!)

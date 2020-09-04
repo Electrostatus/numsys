@@ -1,5 +1,9 @@
 "standard base conversion functions"
-import support as _sup
+#import support as _sup  # this used to work
+try:  # but now you have to do this try except nonsense
+    import support as _sup
+except ImportError:
+    from numsys import support as _sup 
 
 log, floor, ceil = _sup.log, _sup.floor, _sup.ceil
 cmplx, decml = _sup.cmplx, _sup.decml

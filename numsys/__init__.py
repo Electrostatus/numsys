@@ -1,6 +1,12 @@
-import support as _sup
-import standard as _std
-import nonstandard as _nsd
+try:  # Python 2
+    import support as _sup
+    import standard as _std
+    import nonstandard as _nsd
+except ImportError:  # Python 3
+    from numsys import support as _sup
+    from numsys import standard as _std
+    from numsys import nonstandard as _nsd
+
 
 
 __doc__ = """A number base conversion system, version {}

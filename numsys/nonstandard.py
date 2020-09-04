@@ -1,5 +1,6 @@
 "non-standard base conversion functions"
-import support as _sup
+try: import support as _sup
+except ImportError: from numsys import support as _sup
 from os import urandom  # used in ze_to
 
 nstd_bases = {}  # {'name': [func from 10 to base, func from base to 10]}
