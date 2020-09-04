@@ -15,11 +15,11 @@ try:  # to look for better installed modules
             if not b: return gm.log(x)
             else: return gm.log(x) / gm.log(b)
         ceil, floor = gm.ceil, gm.floor
-        #decml, cmplx = gm.mpfr, gm.mpc
-        def decml(x):
+        #mpf, mpc = gm.mpfr, gm.mpc
+        def mpf(x):
             "converts input into multiprecision float - type gmpy2.mpfr"
             return gm.mpfr(x)
-        def cmplx(a, b=None):
+        def mpc(a, b=None):
             "converts input into multiprecision complex - type gmpy2.mpc"
             if not b: return gm.mpc(a)
             else: return gm.mpc(a, b)
@@ -28,11 +28,11 @@ try:  # to look for better installed modules
     except ImportError:  # use mpmath instead
         from mpmath import mp as mp
         log, ceil, floor = mp.log, mp.ceil, mp.floor
-        #decml, cmplx = mp.mpf, mp.mpc
-        def decml(x):
+        #mpf, mpc = mp.mpf, mp.mpc
+        def mpf(x):
             "converts input into multiprecision float - type mpmath.mp.mpf"
             return mp.mpf(x)
-        def cmplx(a, b=None):
+        def mpc(a, b=None):
             "converts input into multiprecision complex - type mpmath.mp.mpc"
             if not b: return mp.mpc(a)
             else: return mp.mpc(a, b)
@@ -43,13 +43,13 @@ except ImportError:  # failing those, use the built-in modules
     floor, ceil = lambda x: int(_flr(x)), lambda x: int(_cil(x))
     import decimal as dm, complex_decimal as cd
     def log(x, b=None):
-        if not b: return decml(x).ln()
-        else: return decml(x).ln() / decml(b).ln()
-    #decml, cmplx = dm.Decimal, cd.ComplexDecimal
-    def decml(x):
+        if not b: return mpf(x).ln()
+        else: return mpf(x).ln() / mpf(b).ln()
+    #mpf, mpc = dm.Decimal, cd.ComplexDecimal
+    def mpf(x):
         "converts input into multiprecision float - type decimal.Decimal"
         return dm.Decimal(x)
-    def cmplx(a, b=None):
+    def mpc(a, b=None):
         "converts input into multiprecision complex - type ComplexDecimal"
         if not b: return cd.ComplexDecimal(a)
         else: return cd.ComplexDecimal(a, b)
@@ -57,7 +57,7 @@ except ImportError:  # failing those, use the built-in modules
 
 ##except ImportError:  # don't use the decimal module (not recommended)
 ##    from math import log, ceil, floor
-##    decml, cmplx = float, complex
+##    mpf, mpc = float, complex
 ##    backend = None
 
 try: import nonstandard as nstd  # used in parseBase
@@ -257,12 +257,12 @@ def parseBase(b):
     if name in str_types:
         b = str_(b).lower()
         if b in nstd.nstd_bases: pass
-        elif 'i' in b or 'j' in b: b = cmplx(b.replace('i', 'j'))
+        elif 'i' in b or 'j' in b: b = mpc(b.replace('i', 'j'))
         else:
             try: b = int(b)
-            except ValueError: b = decml(b)
+            except ValueError: b = mpf(b)
     elif name == 'tuple':
-        b = cmplx(b[0], b[1])
+        b = mpc(b[0], b[1])
     else: pass
     return b
 

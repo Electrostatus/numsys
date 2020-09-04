@@ -30,13 +30,13 @@ __doc__ = """A number base conversion system, version {}
     """.format(_sup.version, _sup.maxchr)
 
 __all__ = ['rebase', 'guess', 'inDecimal', 'numDigits', # this file
-           'decml', 'cmplx', 'setPrec', 'setDigitSet',  # support file
+           'mpf', 'mpc', 'setPrec', 'setDigitSet',  # support file
            'roman', 'factorial',                        # nonstandard file
            ]
 
 # from support file
-decml = _sup.decml
-cmplx = _sup.cmplx
+mpf = _sup.mpf
+mpc = _sup.mpc
 setPrec = _sup.setPrec
 setDigitSet = _sup.setDigitSet
 numStor = _sup.numStor
@@ -56,12 +56,12 @@ def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
     base inputs can be numeric strings (i.e. "-13.93486") to insure precision
     and can contain 'i' or 'j' to signify that they are imaginary values.
 
-    number input can be a numeric type (int, float, complex, cmplx, decml),
+    number input can be a numeric type (int, float, complex, mpc, mpf),
     strings, or two length tuples (for real, imag values)
 
     output - string if no imaginary value
            - namedtuple if imaginary value (see numStor)
-           - int, long, float, complex, cmplx or decml type
+           - int, long, float, complex, mpc or mpf type
              if as_numeric is True and b2 is 10 (regardless of digitSet order)
     """  # de-duplicate this using toTen, toBase?
 	
@@ -82,11 +82,11 @@ def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
         res = nsd_to(real, sgn, sep)
         try: ult = nsd_to(imag, sgn, sep)
         except AttributeError: ult = ''
-        val10 = res if not ult else (res + ult * cmplx(0, 1))
+        val10 = res if not ult else (res + ult * mpc(0, 1))
     elif b1.real and not b1.imag:                   # real bases
         valr = _std.to_10(real, b1, sgn, sep)
         vali = _std.to_10(imag, b1, sgn, sep)
-        val10 = valr if not vali else (valr + vali * cmplx(0, 1))
+        val10 = valr if not vali else (valr + vali * mpc(0, 1))
     elif not b1.real and b1.imag:                   # imaginary bases
         val10 = _std.to_10(real, b1, sgn, sep)  # i base values have no i part
     else:  # complex base, base 0
@@ -104,7 +104,7 @@ def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
         ansr = _std.to_rb(val10.real, b2, sgn, sep)
         ansi = _std.to_rb(val10.imag, b2, sgn, sep)
     elif not b2.real and b2.imag:                 # imaginary bases
-        ansr = _std.to_ib(cmplx(val10.real, val10.imag), b2, sgn, sep)
+        ansr = _std.to_ib(mpc(val10.real, val10.imag), b2, sgn, sep)
         ansi = [0]
     else:  # complex base, base 0
         raise E2
@@ -137,7 +137,7 @@ def toBase(x, b, sgn='-', sep='.'):
             res = lts(tr(x.real, b, sgn, sep), sgn, sep)
             ult = lts(tr(x.imag, b, sgn, sep), sgn, sep)
     elif not b.real and b.imag:                    # imaginary bases
-        res = lts(ti(cmplx(x.real, x.imag), b, sgn, sep), sgn, sep)
+        res = lts(ti(mpc(x.real, x.imag), b, sgn, sep), sgn, sep)
         ult = lts([0], sgn, sep)
     else: raise E
 
@@ -157,11 +157,11 @@ def toTen(x, b, sgn='-', sep='.'):
         res = nsd_to(real, sgn, sep)
         try: ult = nsd_to(imag, sgn, sep)
         except AttributeError: ult = ''
-        result = res if not ult else (res + ult * cmplx(0, 1))
+        result = res if not ult else (res + ult * mpc(0, 1))
     elif b.real and not b.imag:                    # real bases
         res = _std.to_10(real, b, sgn, sep)
         ult = _std.to_10(imag, b, sgn, sep)
-        result = res if not ult else (res + ult * cmplx(0, 1))
+        result = res if not ult else (res + ult * mpc(0, 1))
     elif not b.real and b.imag:                    # imaginary bases
         result = _std.to_10(real, b, sgn, sep)
     else: raise E
@@ -204,10 +204,10 @@ def guess(n, sgn='-', sep='.'):
 
 def numDigits(base):
     "returns the number of characters a base uses"
-    if base.imag: base = base * cmplx(base.real, -base.imag); base = base.real
+    if base.imag: base = base * mpc(base.real, -base.imag); base = base.real
     base = abs(base)  # can't use .conjugate(), gmpy2 2.0.8 will crash
 
-    E, one = ValueError('invalid base'), decml(1)
+    E, one = ValueError('invalid base'), mpf(1)
     if base == 0: return 0  # not actually a base
     elif 0 < base < 1: return int(_sup.ceil(one / base))
     elif base == 1: return 1  # same with this one
@@ -231,6 +231,6 @@ def availableBases():  # does this make any sense to have?
 
 def basePrec(prec, newbase, oldbase=2):
     "gives precision in new base"
-    if newbase.imag: newbase *= cmplx(newbase.real, -newbase.imag)
-    if oldbase.imag: oldbase *= cmplx(oldbase.real, -oldbase.imag)
+    if newbase.imag: newbase *= mpc(newbase.real, -newbase.imag)
+    if oldbase.imag: oldbase *= mpc(oldbase.real, -oldbase.imag)
     return int(prec * abs(_sup.log(abs(oldbase), abs(newbase))))

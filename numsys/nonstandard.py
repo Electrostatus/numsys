@@ -121,15 +121,15 @@ def to_fc(x, sgn='-', sep='.'):
     # largest value that can be made using N digits is (N*N!)-1
     if not x: return _sup.digitSet[0]
 
-    sgn = sgn if x < 0 else ''
-    n, one = abs(x), _sup.decml(1)
-    whl, frc = int(n), _sup.decml(n) - int(n)
+    n, one = abs(x), _sup.mpf(1)
+    whl, frc = int(n), _sup.mpf(n) - int(n)
 
     ans, f = [], 1
     while whl:  # whole part
         whl, d = divmod(whl, f)
         ans.append(d); f += 1
     ans.reverse()
+    if x < 0: ans.append(sgn)
 
     if not frc: return _sup.lst_to_str(ans, sgn, sep)  # is an integer
 
@@ -155,8 +155,8 @@ def fc_to(n, sgn='-', sep='.'):
     except ValueError: neg = 1
 
     is_int = True if not frc else False # answer will be an integer
-    ans = 0 if is_int else _sup.decml(0)
-    one = _sup.decml(1)
+    ans = 0 if is_int else _sup.mpf(0)
+    one = _sup.mpf(1)
 
     mx = len(max(whl, frc, key=len))
     whl = [0] * (mx - len(whl)) + whl
@@ -171,11 +171,11 @@ def fc_to(n, sgn='-', sep='.'):
     f, i = 1, 0
     for j, k in zip(whl[::-1], frc):
         if j > i:  # whole value error checking
-            try: E = SyntaxError(_sup.str_(err1a).format(digitSet[j], i))
+            try: E = SyntaxError(_sup.str_(err1a).format(_sup.digitSet[j], i))
             except IndexError: E = SyntaxError(err1b.format(i))
             raise E
         if k > i:  # fractional value error checking
-            try: E = SyntaxError(_sup.str_(err2a).format(digitSet[k], i))
+            try: E = SyntaxError(_sup.str_(err2a).format(_sup.digitSet[k], i))
             except IndexError: E = SyntaxError(err2b.format(i))
             raise E
 
@@ -188,3 +188,59 @@ nstd_bases['factorial'] = [to_fc, fc_to]
 nstd_bases['f'] = [to_fc, fc_to]
 
 # add primorial and fibonacci bases?
+
+
+
+## --------------- general mixed base ---------------------
+def _to_mixed(x, generator, sgn='-', sep='.', gen_inputs={}):
+    """converts any number in base ten to a mixed base
+    this is a generalized form, do not call directly
+    gen_inputs are a dictionary of input flags fed to the generator
+    generator is a function that gives the mixed base digits via next()
+    """
+    if not x: return [0]
+
+    n, one = abs(x), _sup.mpf(1)
+    whl, frc = int(n), _sup.mpf(n) - int(n)
+    
+    gw = generator(**gen_inputs); b = next(gw) 
+    while not b: b = next(gw)  # base can't start at zero
+
+    ans = [sgn] if x < 0 else []
+    while whl:  # whole part
+        whl, d = divmod(whl, b)
+        ans.append(d); b = next(gw)
+    ans.reverse()
+
+    if not frc: return ans  # is an integer
+    prc = -int(_sup.log(frc, 10)) + 20  # this is a total guess
+    ans.append(sep)
+    
+    gf = generator(**gen_inputs); b = next(gf)
+    while not b: b = next(gf)
+
+    while prc > 0:  # fractional part
+        d, frc = divmod(frc, one / b)
+        ans.append(int(d))
+        b *= next(gf); prc -= 1
+    return ans
+
+
+def count(start=0, step=1):
+    "counting generator"
+    while 1: yield start; start += step
+
+def fib():
+    "fibonacci sequence generator"
+    a, b = 0, 1
+    while 1:
+        yield a
+        a, b = b, a + b
+
+def gfib(n=0):
+    "generalized fibonacci sequence generator"
+    n = abs(n) + 1
+    fseq = [0] * n + [1]
+    while 1:
+        f = sum(fseq[-(n + 1):])
+        fseq.append(f); yield fseq.pop(0)

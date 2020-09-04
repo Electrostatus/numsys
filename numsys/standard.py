@@ -1,12 +1,9 @@
 "standard base conversion functions"
-#import support as _sup  # this used to work
-try:  # but now you have to do this try except nonsense
-    import support as _sup
-except ImportError:
-    from numsys import support as _sup 
+try: import support as _sup
+except ImportError: from numsys import support as _sup 
 
 log, floor, ceil = _sup.log, _sup.floor, _sup.ceil
-cmplx, decml = _sup.cmplx, _sup.decml
+mpc, mpf = _sup.mpc, _sup.mpf
 
 
 def to_zb(num, base, sgn='-', sep='.'):  # to integer base (Z)
@@ -42,7 +39,7 @@ def to_pb(num, base, sgn='-', sep='.'):  # to Positive base
     if base <= 1:
         raise E
 
-    num, base = decml(num), decml(base) # to insure precision
+    num, base = mpf(num), mpf(base) # to insure precision
     if num < 0: lst = [sgn]; num = -num  # handle negative values
     else: lst = []
     
@@ -82,7 +79,7 @@ def to_nb(num, base, sgn='-', sep='.'):  # to Negative base
     if base >= -1:
         raise E
 
-    num, base, one = decml(num), abs(decml(base)), decml(1)
+    num, base, one = mpf(num), abs(mpf(base)), mpf(1)
     # ref. defines method for -base where base > 0
 
     prc = _sup.prec
@@ -121,7 +118,7 @@ def to_vb(num, base, sgn='-', sep='.'):  # to inVerted base
 
     # for a base 0<b<1: convert to base 1/b,
     #  shift radix to the left one column and swap all the digits
-    inv = decml(1) / decml(base)  # invert the base, convert to base 1/B
+    inv = mpf(1) / mpf(base)  # invert the base, convert to base 1/B
     if int(num) == num and int(inv) == inv: ans = to_zb(num, inv, sgn)
     elif base < 0: ans = to_nb(num, inv, sgn, sep)
     else: ans = to_pb(num, inv, sgn, sep)
@@ -143,7 +140,7 @@ def to_rb(num, base, sgn='-', sep='.'):  # to Real base
     ties to_zb, to_pb, to_nb, to_vb into one function
     """
     E = ValueError('invalid base')
-    #num, base = decml(num), decml(base)
+    #num, base = mpf(num), mpf(base)
     if base < -1: ans = to_nb(num, base, sgn, sep)
     elif 0 < abs(base) < 1: ans = to_vb(num, base, sgn, sep)
     elif base > 1: ans = to_pb(num, base, sgn, sep)
@@ -172,10 +169,10 @@ def to_ib(num, base, sgn='-', sep='.'):  # to Imaginary base
     eb = -(abs(base) ** 2)
     if abs(base.imag) > 1:
         real = to_nb(real, eb, sgn, sep)
-        imag = to_nb(decml(imag) / decml(base.imag), eb, sgn, sep)
+        imag = to_nb(mpf(imag) / mpf(base.imag), eb, sgn, sep)
     elif 0 < abs(base.imag) < 1:
         real = to_vb(real, eb, sgn, sep)
-        imag = to_vb(decml(imag) / decml(base.imag), eb, sgn, sep)
+        imag = to_vb(mpf(imag) / mpf(base.imag), eb, sgn, sep)
     else: raise E
 
     # split into whole and fractional parts
@@ -216,11 +213,11 @@ def to_10(num, base, sgn='-', sep='.'):
     else: return num
     
     if base.imag:  # imag/complex bases
-        s, ans, base = 1, cmplx(0), cmplx(base)
+        s, ans, base = 1, mpc(0), mpc(base)
     elif int(base) == base and sep not in num:  # integer bases
         s, ans, base = 1, 0, int(base)
     else:  # real bases
-        s, ans, base = 1, decml(0), decml(base)
+        s, ans, base = 1, mpf(0), mpf(base)
     if sgn in num: num.remove(sgn); s = -1  # handle negatives
 
     # determine order of magnitude
@@ -228,12 +225,12 @@ def to_10(num, base, sgn='-', sep='.'):
     except: P = len(num) - 1  # ints, longs
 
     # find max allowed character for base
-    if base.imag: chk = abs(base * cmplx(base.real, -base.imag))  # can't use .conjugate(), gmpy2 2.0.8 crashes
+    if base.imag: chk = abs(base * mpc(base.real, -base.imag))  # can't use .conjugate(), gmpy2 2.0.8 crashes
     else: chk = abs(base)
 
     # error checking
     E = ValueError('invalid base')  # invalid bases 0 or 1
-    if 0 < chk < 1: chk = int(ceil(decml(1) / chk))
+    if 0 < chk < 1: chk = int(ceil(mpf(1) / chk))
     elif chk > 1: chk = int(ceil(chk))
     else: raise E
     if max(num) >= chk:  # invalid characters
