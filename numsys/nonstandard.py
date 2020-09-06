@@ -23,6 +23,7 @@ def addBase(name, func_to_base, func_from_base):
     global nstd_bases
     nstd_bases[name] = [func_to_base, func_from_base]
 
+
 ## --------------- base one --------------------------------
 def to_p1(n, sgn='-', sep='.'):
     "converts an integer in base ten to base one"
@@ -71,13 +72,16 @@ def ze_to(x, sgn='-', sep='.'):
                ' the bonfires are dying down, the explosives are packed '#mst3k
                'away and the last rabid dog has been shot.'), 'Huh?!??1?one',
                'Try our sister base, base negative zero!', 'error? err-ror?',
-               'Am I an ice cream koan? or am I not an ice cream koan?',
+               'What? Were you thinking this was an actual operating base?',
+               'Exactly squat, sir.', ('Perhaps you\'re wondering who I am,'
+               ' what I\'m doing here, why I have a picture of a burger '
+               'on the wall.'), 'Is confusing. It! It! \'It\' is confusing!',
                ]
     try:
         n = int(abs(hash(urandom(9)))) % len(E2_errs)
         while n in _zn: n = int(abs(hash(urandom(9)))) % len(E2_errs)
         _zn.append(n)  # random, but no immediate repeats
-        if len(_zn) > 3: _zn = _zn[-3:]
+        if len(_zn) > 4: _zn = _zn[-4:]
         E2 = BaseZero(E2_errs[n])
     except Exception:
         E2 = BaseZero(E2_errs[5])
@@ -115,35 +119,56 @@ nstd_bases['roman'] = [to_ro, ro_to]
 nstd_bases['r'] = [to_ro, ro_to]
 
 
-## --------------- factorial base --------------------------
-def to_fc(x, sgn='-', sep='.'):
-    "converts any number in base ten to factorial base\nreturns a string"
-    # largest value that can be made using N digits is (N*N!)-1
-    if not x: return _sup.digitSet[0]
+## --------------- general mixed base ---------------------
+# these are not general enough for negative mixed radixes or floats
+# which, as far as I can tell, have not been attempted or thought of yet
+# it skips any starting zeros (may crash if there's zeros in the middle)
+# ones also don't really work (it'll be okay if theres not many of them)
+#
+# because it skips starting zeros, factorial base won't have 0! or 1/0!
+# positions - likewise for the fibonacci bases
+def _to_mixed(x, generator, sgn='-', sep='.', gen_args={}):
+    """converts any number in base ten to a mixed base
+    this is a generalized form, do not call directly
+    gen_args are a dictionary of input flags fed to the generator
+    generator is a function that gives the mixed base digits via next()
+    """
+    if not x: return [0]
 
     n, one = abs(x), _sup.mpf(1)
     whl, frc = int(n), _sup.mpf(n) - int(n)
+    
+    gw = generator(**gen_args); b = next(gw)
+    while not b: b = next(gw)  # base can't start at zero
 
-    ans, f = [], 1
+    ans = [sgn] if x < 0 else []
     while whl:  # whole part
-        whl, d = divmod(whl, f)
-        ans.append(d); f += 1
+        whl, d = divmod(whl, b)
+        ans.append(d); b = next(gw)
     ans.reverse()
-    if x < 0: ans.append(sgn)
 
-    if not frc: return _sup.lst_to_str(ans, sgn, sep)  # is an integer
+    if not frc: return ans  # is an integer
+    prc = -int(_sup.log(frc, 10)) + 1 + _sup.prec // 7 # this is a total guess
+    ans.append(sep)
+    
+    gf = generator(**gen_args); b = next(gf)
+    while not b: b = next(gf)
 
-    # fractional part
-    prc = -int(_sup.log(frc, 10)) + 20  # this is a total guess
-    ans.append(sep); f = i = 1
-    while prc > 0:
-        d, frc = divmod(frc, one / f)
+    while prc > 0:  # fractional part
+        d, frc = divmod(frc, one / b)
         ans.append(int(d))
-        f *= i; i += 1; prc -= 1
-    return _sup.lst_to_str(ans, sgn, sep)
+        b *= next(gf); prc -= 1
+    return ans
 
-def fc_to(n, sgn='-', sep='.'):
-    "converts a factorial base number to base ten"
+def _mixed_to(n, generator, **kwargs):
+    """converts a mixed radix number to base ten
+    this is a generalized form, do not call directly
+    flags: sgn='-', sep='.', gen_args={}, sym='', name=''
+    gen_args are a dictionary of input flags fed to the generator
+    generator is a function that gives the mixed base digits via next()
+    """
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    gen_args = kwargs.get('gen_args', {})
     lst = _sup.str_to_lst(n, sgn, sep)
     
     try:  # split into whole, fractional parts
@@ -162,85 +187,282 @@ def fc_to(n, sgn='-', sep='.'):
     whl = [0] * (mx - len(whl)) + whl
     frc.extend([0] * (mx - len(frc)))
 
-    # error messages
-    err1a = 'invalid character \'{}\' at position {}! for factorial base'
-    err1b = 'invalid character at position {}! for factorial base'
-    err2a = 'invalid character \'{}\' at position 1/{}! for factorial base'
-    err2b = 'invalid character at position 1/{}! for factorial base'
+    gen = generator(**gen_args); i = next(gen); b = 1
+    while not i: i = next(gen)  # base can't start at zero
 
-    f, i = 1, 0
-    for j, k in zip(whl[::-1], frc):
-        if j > i:  # whole value error checking
-            try: E = SyntaxError(_sup.str_(err1a).format(_sup.digitSet[j], i))
+    # error messages
+    err1a = 'invalid character \'{{}}\' at position {{}}{} for {}base'
+    err1b = 'invalid character at position {{}}{} for {}base'
+    err2a = 'invalid character \'{{}}\' at position 1/{{}}{} for {}base'
+    err2b = 'invalid character at position 1/{{}}{} for {}base'
+
+    sym = kwargs.get('sym', '')  # symbol, if any, for base (! for factorial)
+    name = kwargs.get('name', '')  # name of base
+    err1a = err1a.format(sym, name + (' ' if name else ''))
+    err1b = err1b.format(sym, name + (' ' if name else ''))
+    err2a = err2a.format(sym, name + (' ' if name else ''))
+    err2b = err2b.format(sym, name + (' ' if name else ''))
+
+    for idx, (j, k) in enumerate(zip(whl[::-1], frc)):
+        if j >= i:  # whole value error checking
+            try: E = SyntaxError(_sup.str_(err1a).format(_sup.digitSet[j], idx))
             except IndexError: E = SyntaxError(err1b.format(i))
             raise E
-        if k > i:  # fractional value error checking
-            try: E = SyntaxError(_sup.str_(err2a).format(_sup.digitSet[k], i))
+        if k >= i:  # fractional value error checking
+            try: E = SyntaxError(_sup.str_(err2a).format(_sup.digitSet[k], idx))
             except IndexError: E = SyntaxError(err2b.format(i))
             raise E
-
-        ans += j * f
-        if not is_int: ans += k * (one / f)
-        i += 1; f *= i
+        
+        # the actual conversion process
+        ans += j * b
+        if not is_int: ans += k * (one / (b * i))
+        b *= i; i = next(gen)
     return ans * neg
 
-nstd_bases['factorial'] = [to_fc, fc_to]
-nstd_bases['f'] = [to_fc, fc_to]
 
-# add primorial and fibonacci bases?
-
-
-
-## --------------- general mixed base ---------------------
-def _to_mixed(x, generator, sgn='-', sep='.', gen_inputs={}):
-    """converts any number in base ten to a mixed base
-    this is a generalized form, do not call directly
-    gen_inputs are a dictionary of input flags fed to the generator
-    generator is a function that gives the mixed base digits via next()
-    """
-    if not x: return [0]
-
-    n, one = abs(x), _sup.mpf(1)
-    whl, frc = int(n), _sup.mpf(n) - int(n)
+## --------------- generators ------------------------------
+def _const(n=10):
+    "constant generator"
+    while 1: yield n
     
-    gw = generator(**gen_inputs); b = next(gw) 
-    while not b: b = next(gw)  # base can't start at zero
-
-    ans = [sgn] if x < 0 else []
-    while whl:  # whole part
-        whl, d = divmod(whl, b)
-        ans.append(d); b = next(gw)
-    ans.reverse()
-
-    if not frc: return ans  # is an integer
-    prc = -int(_sup.log(frc, 10)) + 20  # this is a total guess
-    ans.append(sep)
-    
-    gf = generator(**gen_inputs); b = next(gf)
-    while not b: b = next(gf)
-
-    while prc > 0:  # fractional part
-        d, frc = divmod(frc, one / b)
-        ans.append(int(d))
-        b *= next(gf); prc -= 1
-    return ans
-
-
-def count(start=0, step=1):
+def _count(start=0, step=1):
     "counting generator"
     while 1: yield start; start += step
 
-def fib():
+def _fib():
     "fibonacci sequence generator"
     a, b = 0, 1
     while 1:
         yield a
         a, b = b, a + b
 
-def gfib(n=0):
+def _gfib(n=0):
     "generalized fibonacci sequence generator"
     n = abs(n) + 1
     fseq = [0] * n + [1]
     while 1:
         f = sum(fseq[-(n + 1):])
         fseq.append(f); yield fseq.pop(0)
+
+def _wpps():
+    """2-7 wheel postponed prime sieve, yields prime and wheel index
+    do not call this directly, instead call pgen
+    modified from https://stackoverflow.com/a/32803201"""
+    c = 11; gps = (2, 4, 2, 4, 6, 2, 6, 4, 2, 4, 6, 6, 2, 6, 4, 2, 6, 4, 6,
+    8, 4, 2, 4, 2, 4, 8, 6, 4, 6, 2, 4, 6, 2, 6, 6, 4, 2, 4, 6, 2, 6, 4, 2,
+    4, 2, 10, 2, 10)
+
+    yield c, 0; m = {}; o = m.pop
+    s = _wpps(); p, x = next(s)
+    q = p * p; g = len(gps) - 1
+    i = j = k = 0
+    def y(x): return 0 if x > g else x
+
+    while 1:
+        c += gps[i]; i = y(i + 1)
+        b, j = o(c, (0, 0))
+        if not b:
+            if c < q: yield c, i; continue
+            else: j = k; b = p; p, k = next(s); q = p * p
+        d = c + b * gps[j]; j = y(j + 1)
+        while d in m: t = b * gps[j]; j = y(j + 1); d += t
+        m[d] = (b, j)
+
+def _pgen(amt=None):
+    """prime generator
+    for an indefinite amount of primes, leave amt as None"""
+    init = (2, 3, 5, 7)  # dependent on what wheel is used
+    if not amt:
+        for p in init: yield p
+        for p, i in _wpps(): yield p
+    else:  # not using yield from as that won't work in python 2
+        a = abs(int(amt))  # even though it's depreciated as of this writing
+        if a <= len(init):  # (sept-2020) # note, make v1.0 work in both 2 and 3
+             for p in init[:a]: yield p  # then move to just making it work in 3
+        else:
+            for p in init: yield p
+            c = len(init); w = _wpps()
+            while c < a: p, i = next(w); yield p; c += 1
+
+def _catalan():
+    "catalan number generator"
+    ni, i = 1, 0
+    nj, j = 1, 1
+    nk, k = 1, 0
+    while 1:
+        yield ni // (nj * nk)
+        i += 1; ni *= i; i += 1; ni *= i
+        j += 1; nj *= j; k += 1; nk *= k
+
+def _lucas():
+    "lucas number generator"
+    l = [2, 1]
+    while 1:
+        l.append(sum(l))
+        yield l.pop(0)
+
+# https://en.wikipedia.org/wiki/List_of_integer_sequences
+
+def whatever(n=13):  # think up a better name for this
+    "I'm making up this sequence"  # made up Sat. evening, Sep 5th, 2020
+    n = abs(n); n = 1 if not n else n  # only allow a finite amount of primes!
+    init = list(_pgen(n))[::-1]  # backwards 'cause I can! so there!
+    while 1:  # how many steps to stable for n? and what's the stable point?
+        init.append(sum(init) // n)  # if this line before yield, stable
+        yield init.pop(0)            # if after, then decay to 0
+              # how many steps to 0 for n?
+
+def lucky(n):
+    "get all lucky numbers under n"
+    l = list(range(1, n + 1, 2))
+    i = 1; y = l[i]
+    while l[y - 1::y]:
+        for j in l[y - 1::y]: l.remove(j)
+        i += 1; y = l[i]
+    return l
+
+def _noble():
+    "yields full nucleon shell levels (\"Magic\")"
+    # https://en.wikipedia.org/wiki/Magic_number_(physics)
+    i = 0
+    mgc = lambda n: (2*n**3 + 12*n**2 + 25*n - 6 + (-1)**n*(3*n + 6))//12
+    while 1:
+        yield mgc(i); i += 1
+    
+
+## --------------- test base -------------------------------
+def to_tn(x, sgn='-', sep='.'):
+    "base ten to \"mixed\" base ten - only for testing"
+    lst = _to_mixed(x, _const, sgn=sgn, sep=sep)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def tn_to(x, sgn='-', sep='.'):
+    "\"mixed\" base ten to base ten - only for testing"
+    num = _mixed_to(x, _const, sgn=sgn, sep=sep, name='ten')
+    return num
+
+## --------------- factorial base --------------------------
+def to_fc(x, sgn='-', sep='.'):
+    "converts any number in base ten to factorial base\nreturns a string"
+    # largest value that can be made using N digits is (N*N!)-1
+    lst = _to_mixed(x, _count, sgn=sgn, sep=sep)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def fc_to(x, sgn='-', sep='.'):
+    "converts a factorial base number to base ten"
+    num = _mixed_to(x, _count, sgn=sgn, sep=sep, name='factorial', sym='!')
+    return num
+
+nstd_bases['factorial'] = [to_fc, fc_to]
+
+## --------------- primorial base --------------------------
+def to_pm(x, sgn='-', sep='.'):
+    "converts any number in base ten to primorial base\nreturns a string"
+    lst = _to_mixed(x, _pgen, sgn=sgn, sep=sep)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def pm_to(x, sgn='-', sep='.'):
+    "converts a primorial base number to base ten\nreturns a string"
+    num = _mixed_to(x, _pgen, sgn=sgn, sep=sep, name='primorial', sym='#')
+    return num
+
+nstd_bases['primorial'] = [to_pm, pm_to]
+
+## --------------- fibonacci base --------------------------
+def to_fb(x, sgn='-', sep='.'):
+    "converts any number in base ten to fibonacci base\nreturns a string"
+    lst = _to_mixed(x, _fib, sgn=sgn, sep=sep)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def fb_to(x, sgn='-', sep='.'):
+    "converts a fibonacci base number to base ten\nreturns a string"
+    num = _mixed_to(x, _fib, sgn=sgn, sep=sep, name='fibonacci', sym='F')
+    return num
+
+nstd_bases['fibonacci'] = [to_fb, fb_to]
+
+## --------------- tribonacci base -------------------------
+def to_fb3(x, sgn='-', sep='.'):
+    "converts any number in base ten to tribonacci base\nreturns a string"
+    lst = _to_mixed(x, _gfib, sgn=sgn, sep=sep, gen_args={'n':1})
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def fb3_to(x, sgn='-', sep='.'):
+    "converts a tribonacci base number to base ten\nreturns a string"
+    num = _mixed_to(x, _gfib, sgn=sgn, sep=sep, name='tribonacci',
+                    sym='F', gen_args={'n':1})
+    return num
+
+nstd_bases['tribonacci'] = [to_fb3, fb3_to]
+
+## --------------- tetranacci base -------------------------
+def to_fb4(x, sgn='-', sep='.'):
+    "converts any number in base ten to tetranacci base\nreturns a string"
+    lst = _to_mixed(x, _gfib, sgn=sgn, sep=sep, gen_args={'n':2})
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def fb4_to(x, sgn='-', sep='.'):
+    "converts a tetranacci base number to base ten\nreturns a string"
+    num = _mixed_to(x, _gfib, sgn=sgn, sep=sep, name='tetranacci',
+                    sym='F', gen_args={'n':2})
+    return num
+
+nstd_bases['tetranacci'] = [to_fb4, fb4_to]
+
+## --------------- n-nacci base ----------------------------
+def to_fbn(x, sgn='-', sep='.', n=5):
+    "converts any number in base ten to the nth-nacci base\nreturns a string"
+    lst = _to_mixed(x, _gfib, sgn=sgn, sep=sep, gen_args={'n':n-2})
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def fbn_to(x, sgn='-', sep='.', n=5):
+    "converts a tetranacci base number to base ten\nreturns a string"
+    num = _mixed_to(x, _gfib, sgn=sgn, sep=sep, name='n-nacci',
+                    sym='F', gen_args={'n':n-2})
+    return num
+
+#nstd_bases['nnacci'] = [to_fbn, fbn_to]
+
+## --------------- catalan base ----------------------------
+def to_ct(x, sgn='-', sep='.'):
+    "converts any number in base ten to catalan base\nreturns a string"
+    lst = _to_mixed(x, _catalan, sgn=sgn, sep=sep)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def ct_to(x, sgn='-', sep='.', n=5):
+    "converts a catalan base number to base ten\nreturns a string"
+    num = _mixed_to(x, _catalan, sgn=sgn, sep=sep, name='catalan', sym='C')
+    return num
+
+## --------------- lucas base ------------------------------
+def to_lc(x, sgn='-', sep='.'):
+    "converts any number in base ten to lucas base\nreturns a string"
+    lst = _to_mixed(x, _lucas, sgn=sgn, sep=sep)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def lc_to(x, sgn='-', sep='.', n=5):
+    "converts a lucas base number to base ten\nreturns a string"
+    num = _mixed_to(x, _lucas, sgn=sgn, sep=sep, name='lucas', sym='L')
+    return num
+
+## --------------- magic base ------------------------------
+def to_nb(x, sgn='-', sep='.'):
+    "converts any number in base ten to noble base\nreturns a string"
+    lst = _to_mixed(x, _noble, sgn=sgn, sep=sep)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def nb_to(x, sgn='-', sep='.', n=5):
+    "converts a noble base number to base ten\nreturns a string"
+    num = _mixed_to(x, _noble, sgn=sgn, sep=sep, name='noble', sym='N')
+    return num
+
+## --------------- ??? base --------------------------------
+def to_wh(x, sgn='-', sep='.'):
+    "converts any number in base ten to ???"  # evenually base 10
+    lst = _to_mixed(x, whatever, sgn=sgn, sep=sep)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def wh_to(x, sgn='-', sep='.', n=5):
+    "converts a ??? base number to base ten\nreturns a string"
+    num = _mixed_to(x, whatever, sgn=sgn, sep=sep, name='???', sym='?')
+    return num
