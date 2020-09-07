@@ -127,13 +127,16 @@ nstd_bases['r'] = [to_ro, ro_to]
 #
 # because it skips starting zeros, factorial base won't have 0! or 1/0!
 # positions - likewise for the fibonacci bases
-def _to_mixed(x, generator, sgn='-', sep='.', gen_args={}):
+def _to_mixed(x, generator, **kwargs):
     """converts any number in base ten to a mixed base
     this is a generalized form, do not call directly
     gen_args are a dictionary of input flags fed to the generator
     generator is a function that gives the mixed base digits via next()
     """
     if not x: return [0]
+    
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    gen_args = kwargs.get('gen_args', {})
 
     n, one = abs(x), _sup.mpf(1)
     whl, frc = int(n), _sup.mpf(n) - int(n)
@@ -229,13 +232,6 @@ def _count(start=0, step=1):
     "counting generator"
     while 1: yield start; start += step
 
-def _fib():
-    "fibonacci sequence generator"
-    a, b = 0, 1
-    while 1:
-        yield a
-        a, b = b, a + b
-
 def _gfib(n=0):
     "generalized fibonacci sequence generator"
     n = abs(n) + 1
@@ -286,9 +282,7 @@ def _pgen(amt=None):
 
 def _catalan():
     "catalan number generator"
-    ni, i = 1, 0
-    nj, j = 1, 1
-    nk, k = 1, 0
+    ni, i = 1, 0; nj, j = 1, 1; nk, k = 1, 0
     while 1:
         yield ni // (nj * nk)
         i += 1; ni *= i; i += 1; ni *= i
@@ -301,9 +295,16 @@ def _lucas():
         l.append(sum(l))
         yield l.pop(0)
 
+def _noble():
+    "yields full nucleon shell levels (\"Magic\")"
+    i = 0  # https://en.wikipedia.org/wiki/Magic_number_(physics)
+    mgc = lambda n: (2*n**3 + 12*n**2 + 25*n - 6 + (-1)**n*(3*n + 6))//12
+    while 1:
+        yield mgc(i); i += 1
+
 # https://en.wikipedia.org/wiki/List_of_integer_sequences
 
-def whatever(n=13):  # think up a better name for this
+def _whatever(n=13):  # think up a better name for this
     "I'm making up this sequence"  # made up Sat. evening, Sep 5th, 2020
     n = abs(n); n = 1 if not n else n  # only allow a finite amount of primes!
     init = list(_pgen(n))[::-1]  # backwards 'cause I can! so there!
@@ -312,23 +313,55 @@ def whatever(n=13):  # think up a better name for this
         yield init.pop(0)            # if after, then decay to 0
               # how many steps to 0 for n?
 
-def lucky(n):
-    "get all lucky numbers under n"
-    l = list(range(1, n + 1, 2))
-    i = 1; y = l[i]
-    while l[y - 1::y]:
-        for j in l[y - 1::y]: l.remove(j)
-        i += 1; y = l[i]
-    return l
-
-def _noble():
-    "yields full nucleon shell levels (\"Magic\")"
-    # https://en.wikipedia.org/wiki/Magic_number_(physics)
-    i = 0
-    mgc = lambda n: (2*n**3 + 12*n**2 + 25*n - 6 + (-1)**n*(3*n + 6))//12
+def _bell():
+    "yields bell numbers"
+    l = [1]
     while 1:
-        yield mgc(i); i += 1
-    
+        yield l[-1]
+        for i in range(len(l) - 1):
+            l[i + 1] = l[i] + l[i + 1]
+        l.insert(0, l[-1])
+
+def _tri():
+    "yields triangular numbers"
+    # can also be def tri(n): return (n * (n + 1)) // 2
+    ni = 2; i = 3; nk = 1; k = 1
+    yield 0
+    while 1:
+        yield ni // (2 * nk)
+        ni *= i; i += 1
+        nk *= k; k += 1
+
+def _tet():
+    "yields tetrahedral numbers"
+    # can also be def tet(n): return (n * (n + 1) * (n + 2)) // 6
+    ni = 6; i = 4; nk = 1; k = 1
+    while 1:
+        yield ni // (6 * nk)
+        ni *= i; i += 1
+        nk *= k; k += 1
+
+def _pent():
+    "yields pentatope numbers"
+    # can also be def pent(n): return (n * (n + 1) * (n + 2) * (n + 3)) // 24
+    ni = 24; i = 5; nk = 1; k = 1
+    while 1:
+        yield ni // (24 * nk)
+        ni *= i; i += 1
+        nk *= k; k += 1
+
+
+def _caterer():
+    "yields lazy caterer's sequence (lazily!)"
+    n = 0  # you're the worst caterer we've ever had!
+    while 1: yield (n * n + n + 2) // 2; n += 1
+
+def _syl():
+    "sylvester's sequence generator"
+    s = 1; yield 2
+    while 1:
+        s *= (s + 1)
+        yield s + 1
 
 ## --------------- test base -------------------------------
 def to_tn(x, sgn='-', sep='.'):
@@ -371,12 +404,12 @@ nstd_bases['primorial'] = [to_pm, pm_to]
 ## --------------- fibonacci base --------------------------
 def to_fb(x, sgn='-', sep='.'):
     "converts any number in base ten to fibonacci base\nreturns a string"
-    lst = _to_mixed(x, _fib, sgn=sgn, sep=sep)
+    lst = _to_mixed(x, _gfib, sgn=sgn, sep=sep)
     return _sup.lst_to_str(lst, sgn, sep)
 
 def fb_to(x, sgn='-', sep='.'):
     "converts a fibonacci base number to base ten\nreturns a string"
-    num = _mixed_to(x, _fib, sgn=sgn, sep=sep, name='fibonacci', sym='F')
+    num = _mixed_to(x, _gfib, sgn=sgn, sep=sep, name='fibonacci', sym='F')
     return num
 
 nstd_bases['fibonacci'] = [to_fb, fb_to]
@@ -434,6 +467,8 @@ def ct_to(x, sgn='-', sep='.', n=5):
     num = _mixed_to(x, _catalan, sgn=sgn, sep=sep, name='catalan', sym='C')
     return num
 
+nstd_bases['catalan'] = [to_ct, ct_to]
+
 ## --------------- lucas base ------------------------------
 def to_lc(x, sgn='-', sep='.'):
     "converts any number in base ten to lucas base\nreturns a string"
@@ -444,6 +479,8 @@ def lc_to(x, sgn='-', sep='.', n=5):
     "converts a lucas base number to base ten\nreturns a string"
     num = _mixed_to(x, _lucas, sgn=sgn, sep=sep, name='lucas', sym='L')
     return num
+
+nstd_bases['lucas'] = [to_lc, lc_to]
 
 ## --------------- magic base ------------------------------
 def to_nb(x, sgn='-', sep='.'):
@@ -456,13 +493,29 @@ def nb_to(x, sgn='-', sep='.', n=5):
     num = _mixed_to(x, _noble, sgn=sgn, sep=sep, name='noble', sym='N')
     return num
 
+nstd_bases['noble'] = [to_nb, nb_to]
+
 ## --------------- ??? base --------------------------------
 def to_wh(x, sgn='-', sep='.'):
     "converts any number in base ten to ???"  # evenually base 10
-    lst = _to_mixed(x, whatever, sgn=sgn, sep=sep)
+    lst = _to_mixed(x, _whatever, sgn=sgn, sep=sep)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def wh_to(x, sgn='-', sep='.', n=5):
+def wh_to(x, sgn='-', sep='.'):
     "converts a ??? base number to base ten\nreturns a string"
-    num = _mixed_to(x, whatever, sgn=sgn, sep=sep, name='???', sym='?')
+    num = _mixed_to(x, _whatever, sgn=sgn, sep=sep, name='???', sym='?')
     return num
+
+## --------------- bell base -------------------------------
+def to_bl(x, sgn='-', sep='.'):
+    "converts any number in base ten to bell base\nreturns a string"
+    lst = _to_mixed(x, _bell, sgn=sgn, sep=sep)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def bl_to(x, sgn='-', sep='.'):
+    "converts a bell base number to base ten\nreturns a string"
+    num = _mixed_to(x, _bell, sgn=sgn, sep=sep, name='bell', sym='B')
+    return num
+
+nstd_bases['bell'] = [to_bl, bl_to]
+
