@@ -86,6 +86,7 @@ class testNumsys(unittest.TestCase):
                 rnd_j = _sup.rround(j)
                 self.assertEqual(rnd_i, rnd_j, msg=mesg.format(b, i, float(j)))
 
+
     def test_imag_cmpx_identity(self):
         "imag base conversion with complex from base 10 to base B to 10"
         # this tests complex values moreso than conversion
@@ -118,6 +119,24 @@ class testNumsys(unittest.TestCase):
                 rnd_i = complex(ir, ij)
                 rnd_j = complex(jr, jj)
                 self.assertEqual(rnd_i, rnd_j, msg=mesg.format(b, i, j))
+
+                       
+    def test_nstd_int_identity(self):
+        "base conversion of nonstandard bases"
+        mesg = ('10 to {} to 10 conversion failed'
+                ' with input {} (output: {})')
+        # could test reals with the nonstandard bases, but not all of them
+        # can handle real values (like the roman base)
+
+        # select multiple random values
+        nums = [random.randint(1, 50000) for i in range(1009)]
+
+        for b in _nsd.nstd_bases:
+            tb, tt = _nsd.nstd_bases[b]
+            for i in nums:
+                j = tt(tb(i))
+                self.assertEqual(i, j, msg=mesg.format(b, i, j))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

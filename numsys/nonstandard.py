@@ -14,52 +14,58 @@ def addBase(name, func_to_base, func_from_base):
     adds a base to list of nonstandard or custom number bases
     name - lowercase string of base name
     func_to_base - function that converts a numeric input to base
-                   must accept three inputs in this order:
-                   x (the numeric input), sgn='-', sep='.'
+                   must accept one input and keywords:
+                   x (the numeric input), **kwargs
     func_from_base - function that converts a string input to base
-                     must accept three inputs in this order:
-                     x (the string input), sgn='-', sep='.'
+                     must accept one inputs and keywords:
+                     x (the string input), **kwargs
     """
     global nstd_bases
     nstd_bases[name] = [func_to_base, func_from_base]
 
+joke_bases = {}
 
 ## --------------- base one --------------------------------
-def to_p1(n, sgn='-', sep='.'):
+def to_p1(n, **kwargs):
     "converts an integer in base ten to base one"
+    sgn = kwargs.get('sgn', '-')
     if n < 0: return sgn + (_sup.digitSet[1] * int(-n))
     elif n > 0: return _sup.digitSet[1] * int(n)
     else: return ''
 
-def p1_to(n, sgn='-', sep='.'):
+def p1_to(n, **kwargs):
     "converts a base one value to base ten"
+    sgn = kwargs.get('sgn', '-')
+    print(n, len(n))
     if sgn in n: return -(len(n) - 1)
     else: return len(n)
 
+joke_bases[1] = [to_p1, p1_to]
 
 ## --------------- base negative one -----------------------
-def to_n1(n, sgn='-', sep='.'):
+def to_n1(n, **kwargs):
     "converts an integer in base ten to base negative one"
     if n > 0: return _sup.digitSet[1] * (int(n) * 2 - 1)
     elif n < 0: return _sup.digitSet[1] * (-int(n) * 2)
     else: return ''
 
-def n1_to(n, sgn='-', sep='.'):
+def n1_to(n, **kwargs):
     "converts a base negative one value to base ten"
     l = len(n)
     if not l % 2: return -l // 2
     else: return l // 2 + 1
 
+joke_bases[-1] = [to_n1, n1_to]
 
 ## --------------- base zero -------------------------------
-def to_ze(x, sgn='-', sep='.'):
+def to_ze(x, **kwargs):
     "converts any number in base ten to base zero"
     return ''
 
 _zn = [0]
 class BaseZero(ZeroDivisionError): pass  # ice cream koan
 
-def ze_to(x, sgn='-', sep='.'):
+def ze_to(x, **kwargs):
     "converts a base zero value to base ten"
     E1 = SyntaxError('base zero does not use any characters')
     global _zn
@@ -91,6 +97,7 @@ def ze_to(x, sgn='-', sep='.'):
     else: raise E1
     return  # if it got here (and it shouldn't) return nothin'
 
+joke_bases[0] = [to_ze, ze_to]
 
 ## --------------- roman numerals --------------------------
 _rmap = (#('Q', 500000), ('MQ', 499000),  # roman numeral extension
@@ -98,7 +105,7 @@ _rmap = (#('Q', 500000), ('MQ', 499000),  # roman numeral extension
          ('C', 100),  ('XC', 90),  ('L', 50),  ('XL', 40),
          ('X', 10),   ('IX', 9),   ('V', 5),   ('IV', 4), ('I', 1))
 
-def to_ro(n, sgn='-', sep='.'):
+def to_ro(n, **kwargs):
     "coverts a base ten integer to roman numerals"
     #if not n: return 'nulla'  # zero extension
     romu, i = [], abs(n)
@@ -107,7 +114,7 @@ def to_ro(n, sgn='-', sep='.'):
         romu.append(r * k)
     return ''.join(romu)
 
-def ro_to(n, sgn='-', sep='.'):
+def ro_to(n, **kwargs):
     "converts roman numerals to a base ten integer"
     #if n == 'nulla': return 0  # zero extension
     ans = i = 0; n = n.upper()
@@ -116,7 +123,6 @@ def ro_to(n, sgn='-', sep='.'):
     return ans
 
 nstd_bases['roman'] = [to_ro, ro_to]
-nstd_bases['r'] = [to_ro, ro_to]
 
 
 ## --------------- general mixed base ---------------------
@@ -127,6 +133,7 @@ nstd_bases['r'] = [to_ro, ro_to]
 #
 # because it skips starting zeros, factorial base won't have 0! or 1/0!
 # positions - likewise for the fibonacci bases
+# possibly spin these out into a seperate file later - mixed.py
 def _to_mixed(x, generator, **kwargs):
     """converts any number in base ten to a mixed base
     this is a generalized form, do not call directly
@@ -139,7 +146,9 @@ def _to_mixed(x, generator, **kwargs):
     gen_args = kwargs.get('gen_args', {})
 
     n, one = abs(x), _sup.mpf(1)
-    whl, frc = int(n), _sup.mpf(n) - int(n)
+    whl = int(n)
+    if whl != n: frc = _sup.mpf(n) - int(n)
+    else: frc = 0  # if not enough precision, a "fraction" might appear
     
     gw = generator(**gen_args); b = next(gw)
     while not b: b = next(gw)  # base can't start at zero
@@ -302,9 +311,7 @@ def _noble():
     while 1:
         yield mgc(i); i += 1
 
-# https://en.wikipedia.org/wiki/List_of_integer_sequences
-
-def _whatever(n=13):  # think up a better name for this
+def _whatever(n=13):  # prime damped (but is is critically damped?)
     "I'm making up this sequence"  # made up Sat. evening, Sep 5th, 2020
     n = abs(n); n = 1 if not n else n  # only allow a finite amount of primes!
     init = list(_pgen(n))[::-1]  # backwards 'cause I can! so there!
@@ -322,34 +329,15 @@ def _bell():
             l[i + 1] = l[i] + l[i + 1]
         l.insert(0, l[-1])
 
-def _tri():
-    "yields triangular numbers"
-    # can also be def tri(n): return (n * (n + 1)) // 2
-    ni = 2; i = 3; nk = 1; k = 1
-    yield 0
+def _simp(n=0):
+    "n-simplex number generator"
+    ni = 1; i = 1  # or are these figurate numbers of triangular type?
+    while i < n: ni *= i; i += 1
+    f = ni; nk = 1; k = 1
     while 1:
-        yield ni // (2 * nk)
+        yield ni // (f * nk)
         ni *= i; i += 1
         nk *= k; k += 1
-
-def _tet():
-    "yields tetrahedral numbers"
-    # can also be def tet(n): return (n * (n + 1) * (n + 2)) // 6
-    ni = 6; i = 4; nk = 1; k = 1
-    while 1:
-        yield ni // (6 * nk)
-        ni *= i; i += 1
-        nk *= k; k += 1
-
-def _pent():
-    "yields pentatope numbers"
-    # can also be def pent(n): return (n * (n + 1) * (n + 2) * (n + 3)) // 24
-    ni = 24; i = 5; nk = 1; k = 1
-    while 1:
-        yield ni // (24 * nk)
-        ni *= i; i += 1
-        nk *= k; k += 1
-
 
 def _caterer():
     "yields lazy caterer's sequence (lazily!)"
@@ -359,69 +347,91 @@ def _caterer():
 def _syl():
     "sylvester's sequence generator"
     s = 1; yield 2
+    while 1: s *= (s + 1); yield s + 1
+
+def _ooze():  # ooze base requested by brother
+    "the ooze base generator"
+    n = 10  # starting value
+    mx, stch = 10, 1  # max value and stretch
+    mn, d, c = 2, 1, 1  # min value (must be > 1), decay amount, decay count
+    stp, sgn = 1, -1  # step and sign
     while 1:
-        s *= (s + 1)
-        yield s + 1
+        for i in range(stch): yield n
+        n += (stp * sgn)
+        if n < 1: n = 1; sgn = -sgn; stch += stch
+        if n > mx: n = mx; sgn = -sgn; c += 1
+        if c >= d: mx -= 1; c = 0
+        if mx < mn: mx = mn
 
 ## --------------- test base -------------------------------
-def to_tn(x, sgn='-', sep='.'):
+def to_tn(x, **kwargs):
     "base ten to \"mixed\" base ten - only for testing"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     lst = _to_mixed(x, _const, sgn=sgn, sep=sep)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def tn_to(x, sgn='-', sep='.'):
+def tn_to(x, **kwargs):
     "\"mixed\" base ten to base ten - only for testing"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _const, sgn=sgn, sep=sep, name='ten')
     return num
 
 ## --------------- factorial base --------------------------
-def to_fc(x, sgn='-', sep='.'):
+def to_fc(x, **kwargs):
     "converts any number in base ten to factorial base\nreturns a string"
     # largest value that can be made using N digits is (N*N!)-1
-    lst = _to_mixed(x, _count, sgn=sgn, sep=sep)
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _count, **kwargs)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def fc_to(x, sgn='-', sep='.'):
+def fc_to(x, **kwargs):
     "converts a factorial base number to base ten"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _count, sgn=sgn, sep=sep, name='factorial', sym='!')
     return num
 
 nstd_bases['factorial'] = [to_fc, fc_to]
 
 ## --------------- primorial base --------------------------
-def to_pm(x, sgn='-', sep='.'):
+def to_pm(x, **kwargs):
     "converts any number in base ten to primorial base\nreturns a string"
-    lst = _to_mixed(x, _pgen, sgn=sgn, sep=sep)
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _pgen, **kwargs)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def pm_to(x, sgn='-', sep='.'):
+def pm_to(x, **kwargs):
     "converts a primorial base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _pgen, sgn=sgn, sep=sep, name='primorial', sym='#')
     return num
 
 nstd_bases['primorial'] = [to_pm, pm_to]
 
 ## --------------- fibonacci base --------------------------
-def to_fb(x, sgn='-', sep='.'):
+def to_fb(x, **kwargs):
     "converts any number in base ten to fibonacci base\nreturns a string"
-    lst = _to_mixed(x, _gfib, sgn=sgn, sep=sep)
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _gfib, **kwargs)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def fb_to(x, sgn='-', sep='.'):
+def fb_to(x, **kwargs):
     "converts a fibonacci base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _gfib, sgn=sgn, sep=sep, name='fibonacci', sym='F')
     return num
 
 nstd_bases['fibonacci'] = [to_fb, fb_to]
 
 ## --------------- tribonacci base -------------------------
-def to_fb3(x, sgn='-', sep='.'):
+def to_fb3(x, **kwargs):
     "converts any number in base ten to tribonacci base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     lst = _to_mixed(x, _gfib, sgn=sgn, sep=sep, gen_args={'n':1})
     return _sup.lst_to_str(lst, sgn, sep)
 
-def fb3_to(x, sgn='-', sep='.'):
+def fb3_to(x, **kwargs):
     "converts a tribonacci base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _gfib, sgn=sgn, sep=sep, name='tribonacci',
                     sym='F', gen_args={'n':1})
     return num
@@ -429,13 +439,15 @@ def fb3_to(x, sgn='-', sep='.'):
 nstd_bases['tribonacci'] = [to_fb3, fb3_to]
 
 ## --------------- tetranacci base -------------------------
-def to_fb4(x, sgn='-', sep='.'):
+def to_fb4(x, **kwargs):
     "converts any number in base ten to tetranacci base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     lst = _to_mixed(x, _gfib, sgn=sgn, sep=sep, gen_args={'n':2})
     return _sup.lst_to_str(lst, sgn, sep)
 
-def fb4_to(x, sgn='-', sep='.'):
+def fb4_to(x, **kwargs):
     "converts a tetranacci base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _gfib, sgn=sgn, sep=sep, name='tetranacci',
                     sym='F', gen_args={'n':2})
     return num
@@ -443,13 +455,17 @@ def fb4_to(x, sgn='-', sep='.'):
 nstd_bases['tetranacci'] = [to_fb4, fb4_to]
 
 ## --------------- n-nacci base ----------------------------
-def to_fbn(x, sgn='-', sep='.', n=5):
+def to_fbn(x, **kwargs):
     "converts any number in base ten to the nth-nacci base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    n = kwargs.get('n', 5)
     lst = _to_mixed(x, _gfib, sgn=sgn, sep=sep, gen_args={'n':n-2})
     return _sup.lst_to_str(lst, sgn, sep)
 
-def fbn_to(x, sgn='-', sep='.', n=5):
+def fbn_to(x, **kwargs):
     "converts a tetranacci base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    n = kwargs.get('n', 5)
     num = _mixed_to(x, _gfib, sgn=sgn, sep=sep, name='n-nacci',
                     sym='F', gen_args={'n':n-2})
     return num
@@ -457,65 +473,168 @@ def fbn_to(x, sgn='-', sep='.', n=5):
 #nstd_bases['nnacci'] = [to_fbn, fbn_to]
 
 ## --------------- catalan base ----------------------------
-def to_ct(x, sgn='-', sep='.'):
+def to_ct(x, **kwargs):
     "converts any number in base ten to catalan base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     lst = _to_mixed(x, _catalan, sgn=sgn, sep=sep)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def ct_to(x, sgn='-', sep='.', n=5):
+def ct_to(x, **kwargs):
     "converts a catalan base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _catalan, sgn=sgn, sep=sep, name='catalan', sym='C')
     return num
 
 nstd_bases['catalan'] = [to_ct, ct_to]
 
 ## --------------- lucas base ------------------------------
-def to_lc(x, sgn='-', sep='.'):
+def to_lc(x, **kwargs):
     "converts any number in base ten to lucas base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     lst = _to_mixed(x, _lucas, sgn=sgn, sep=sep)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def lc_to(x, sgn='-', sep='.', n=5):
+def lc_to(x, **kwargs):
     "converts a lucas base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _lucas, sgn=sgn, sep=sep, name='lucas', sym='L')
     return num
 
 nstd_bases['lucas'] = [to_lc, lc_to]
 
 ## --------------- magic base ------------------------------
-def to_nb(x, sgn='-', sep='.'):
+def to_nb(x, **kwargs):
     "converts any number in base ten to noble base\nreturns a string"
-    lst = _to_mixed(x, _noble, sgn=sgn, sep=sep)
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _noble, **kwargs)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def nb_to(x, sgn='-', sep='.', n=5):
+def nb_to(x, **kwargs):
     "converts a noble base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _noble, sgn=sgn, sep=sep, name='noble', sym='N')
     return num
 
 nstd_bases['noble'] = [to_nb, nb_to]
 
 ## --------------- ??? base --------------------------------
-def to_wh(x, sgn='-', sep='.'):
+def to_wh(x, **kwargs):
     "converts any number in base ten to ???"  # evenually base 10
-    lst = _to_mixed(x, _whatever, sgn=sgn, sep=sep)
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _whatever, **kwargs)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def wh_to(x, sgn='-', sep='.'):
+def wh_to(x, **kwargs):
     "converts a ??? base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _whatever, sgn=sgn, sep=sep, name='???', sym='?')
     return num
 
 ## --------------- bell base -------------------------------
-def to_bl(x, sgn='-', sep='.'):
+def to_bl(x, **kwargs):
     "converts any number in base ten to bell base\nreturns a string"
-    lst = _to_mixed(x, _bell, sgn=sgn, sep=sep)
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _bell, **kwargs)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def bl_to(x, sgn='-', sep='.'):
+def bl_to(x, **kwargs):
     "converts a bell base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _bell, sgn=sgn, sep=sep, name='bell', sym='B')
     return num
 
 nstd_bases['bell'] = [to_bl, bl_to]
 
+## --------------- triangular base -------------------------
+def to_tr(x, **kwargs):
+    "converts any number in base ten to triangular base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _simp, sgn=sgn, sep=sep, gen_args={'n':3})
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def tr_to(x, **kwargs):
+    "converts a bell triangular number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    num = _mixed_to(x, _simp, sgn=sgn, sep=sep, name='triangular', sym='t',
+                    gen_args={'n':3})
+    return num
+
+nstd_bases['triangular'] = [to_tr, tr_to]
+
+## --------------- tetrahedral base ------------------------
+def to_tt(x, **kwargs):
+    "converts any number in base ten to tetrahedral base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _simp, sgn=sgn, sep=sep, gen_args={'n':4})
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def tt_to(x, **kwargs):
+    "converts a tetrahedral base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    num = _mixed_to(x, _simp, sgn=sgn, sep=sep, name='tetrahedral', sym='t',
+                    gen_args={'n':4})
+    return num
+
+nstd_bases['tetrahedral'] = [to_tt, tt_to]
+
+## --------------- pentatope base --------------------------
+def to_pt(x, **kwargs):
+    "converts any number in base ten to pentatope base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _simp, sgn=sgn, sep=sep, gen_args={'n':5})
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def pt_to(x, **kwargs):
+    "converts a pentatope base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    num = _mixed_to(x, _simp, sgn=sgn, sep=sep, name='pentatope', sym='p',
+                    gen_args={'n':5})
+    return num
+
+nstd_bases['pentatope'] = [to_pt, pt_to]
+
+## --------------- lazy caterer's base ---------------------
+def to_yc(x, **kwargs):
+    "converts any number in base ten to the lazy caterer's base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _caterer, **kwargs)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def yc_to(x, **kwargs):
+    "converts a lazy caterer's base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    num = _mixed_to(x, _caterer, sgn=sgn, sep=sep, name='caterer', sym='c')
+    return num
+
+nstd_bases['caterer'] = [to_yc, yc_to]
+
+## --------------- sylvester base --------------------------
+def to_sy(x, **kwargs):
+    "converts any number in base ten to sylvester base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _syl, **kwargs)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def sy_to(x, **kwargs):
+    "converts a sylvester base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    num = _mixed_to(x, _syl, sgn=sgn, sep=sep, name='sylvester', sym='s')
+    return num
+
+nstd_bases['sylvester'] = [to_sy, sy_to]
+
+## --------------- ooze base -------------------------------
+# brother wanted an "ooze" base - so here's a base that slowly smears out
+def to_oz(x, **kwargs):
+    "converts any number in base ten to the ooze base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _ooze, **kwargs)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def oz_to(x, **kwargs):                
+    "converts an ooze base number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    num = _mixed_to(x, _ooze, sgn=sgn, sep=sep, name='ooze', sym='o')
+    return num
+    
+nstd_bases['ooze'] = [to_oz, oz_to]

@@ -8,7 +8,6 @@ except ImportError:  # Python 3
     from numsys import nonstandard as _nsd
 
 
-
 __doc__ = """A number base conversion system, version {}
 
     can convert any real or complex number
@@ -29,9 +28,10 @@ __doc__ = """A number base conversion system, version {}
     sep - what character the radix point (fractional separator) is (default '.')
     """.format(_sup.version, _sup.maxchr)
 
-__all__ = ['rebase', 'guess', 'inDecimal', 'numDigits', # this file
-           'mpf', 'mpc', 'setPrec', 'setDigitSet',  # support file
-           'roman', 'factorial',                        # nonstandard file
+__all__ = ['rebase', 'guess', 'in_decimal', 'num_digits', # this file
+           'to_base', 'to_ten',              
+           'mpf', 'mpc', 'setPrec', 'setDigitSet',      # support file
+           'roman', 'factorial', 'named_bases',         # nonstandard file
            ]
 
 # from support file
@@ -44,17 +44,20 @@ VERSION = _sup.version
 
 # from nonstandard file
 roman = _nsd.to_ro
-romanTo = _nsd.ro_to
+roman_to = _nsd.ro_to
 factorial = _nsd.to_fc
-factorialTo = _nsd.fc_to
+factorial_to = _nsd.fc_to
+named_bases = list(_nsd.nstd_bases.keys())
 
 
-def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
+def rebase(num, b1, b2, **kwargs):
     """
     Convert a number from base b1 to base b2
 
-    base inputs can be numeric strings (i.e. "-13.93486") to insure precision
-    and can contain 'i' or 'j' to signify that they are imaginary values.
+    Base inputs can be numeric strings (i.e. "-13.93486") to insure precision
+    and can contain 'i' or 'j' to signify that they are imaginary values. Bases
+    may additionally be names ('roman') to access nonstandard or mixed radix
+    bases - see 'named_bases' for full list
 
     number input can be a numeric type (int, float, complex, mpc, mpf),
     strings, or two length tuples (for real, imag values)
@@ -63,111 +66,120 @@ def rebase(num, b1, b2, sgn='-', sep='.', as_numeric=False):
            - namedtuple if imaginary value (see numStor)
            - int, long, float, complex, mpc or mpf type
              if as_numeric is True and b2 is 10 (regardless of digitSet order)
-    """  # de-duplicate this using toTen, toBase?
-	
+    flags:
+        sgn - what character the negative sign is
+              default '-'
+        sep - what character the radix point (fractional separator) is
+              default '.'
+        as_numeric - return will be a python numeric type is b2 is 10
+              default False
+        joke_bases - True/False - allow bases 1, 0, -1 to be valid
+              default False
+    """
+    jokes = kwargs.get('joke_bases')
     # if the number is zero, why do any math? return a zero
-    if not num: return _sup.digitSet[0]
+    if not jokes and not num: return _sup.digitSet[0]
 
     # parse input
     real, imag = _sup.parseInput(num)
     b1, b2 = _sup.parseBase(b1), _sup.parseBase(b2)
+    
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
 
     E1 = ValueError('invalid input base')
     E2 = ValueError('invalid output base')
+    
     # convert input from base b1 to base ten (outputs here are numerical)
-    if b1 in (1, 0):                                # invalid bases
+    if jokes and b1 in _nsd.joke_bases:             # joke bases
+            jb = _nsd.joke_bases.get(b1)[1]
+            res = jb(real, **kwargs)
+            ult = '' if not imag else jb(imag, **kwargs)
+            val10 = res if not ult else (res + ult * mpc(0, 1))     
+    elif b1 in (1, 0, -1):                          # invalid bases
         raise E1
     elif _sup.str_(b1).lower() in _nsd.nstd_bases:  # custom bases
         nsd_to = _nsd.nstd_bases.get(_sup.str_(b1).lower())[1]
-        res = nsd_to(real, sgn, sep)
-        try: ult = nsd_to(imag, sgn, sep)
+        res = nsd_to(real, **kwargs)
+        try: ult = nsd_to(imag, **kwargs)
         except AttributeError: ult = ''
         val10 = res if not ult else (res + ult * mpc(0, 1))
-    elif b1.real and not b1.imag:                   # real bases
-        valr = _std.to_10(real, b1, sgn, sep)
-        vali = _std.to_10(imag, b1, sgn, sep)
-        val10 = valr if not vali else (valr + vali * mpc(0, 1))
-    elif not b1.real and b1.imag:                   # imaginary bases
-        val10 = _std.to_10(real, b1, sgn, sep)  # i base values have no i part
+    elif ((b1.real and not b1.imag) or              # real, imag bases
+          (not b1.real and b1.imag)): 
+        val10 = to_ten(num, b1, **kwargs)
     else:  # complex base, base 0
         raise E1
 
     # return as a numeric type
-    if as_numeric and b2 == 10: return val10
+    if kwargs.get('as_numeric') and b2 == 10: return val10
 
     # convert base ten value to base b2 (outputs here will be lists)
-    if _sup.str_(b2).lower() in _nsd.nstd_bases:  # custom bases
+    if jokes and b2 in _nsd.joke_bases:             # joke bases
+            jb = _nsd.joke_bases.get(b2)[0]
+            res = jb(val10.real, **kwargs)
+            ult = jb(val10.imag, **kwargs) 
+    elif _sup.str_(b2).lower() in _nsd.nstd_bases:# custom bases
         to_nsd = _nsd.nstd_bases.get(_sup.str_(b2).lower())[0]
-        ansr = to_nsd(val10.real, sgn, sep)
-        ansi = to_nsd(val10.imag, sgn, sep)
-    elif b2.real and not b2.imag:                 # real bases
-        ansr = _std.to_rb(val10.real, b2, sgn, sep)
-        ansi = _std.to_rb(val10.imag, b2, sgn, sep)
-    elif not b2.real and b2.imag:                 # imaginary bases
-        ansr = _std.to_ib(mpc(val10.real, val10.imag), b2, sgn, sep)
-        ansi = [0]
-    else:  # complex base, base 0
+        res = to_nsd(val10.real, **kwargs)
+        ult = to_nsd(val10.imag, **kwargs)
+    elif ((b2.real and not b2.imag) or            # real, imag bases
+          (not b2.real and b2.imag)):
+        res = to_base(val10, b2, **kwargs)
+        ult = 0
+    else:                                         # complex base, base 0
         raise E2
 
-    try:  # to convert to string
-        res = _sup.lst_to_str(ansr, sgn, sep)
-        ult = _sup.lst_to_str(ansi, sgn, sep)
-    except TypeError:  # custom base return is a string?
-        res, ult = ansr, ansi
     result = res if ult in _sup.zero_types else numStor(res, ult)
     return result
 
-def toBase(x, b, sgn='-', sep='.'):
-    "convert a base ten numeric value x to base b"
-    # same as the second half of rebase
+def to_base(x, b, **kwargs):
+    """convert a base ten numeric value x to positional base b
+    only handles positional bases - use rebase for nonpositional bases
+    """
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     x, b = _sup.parseBase(x), _sup.parseBase(b)
+
+    if kwargs.get('as_numeric') and b == 10:
+        return to_ten(x, 10, **kwargs)
     
     lts, tr, ti = _sup.lst_to_str, _std.to_rb, _std.to_ib
     E = ValueError('invalid base')
-    if b in (1, 0):                                # invalid bases
+    if b in (1, 0, -1):                            # invalid bases
         raise E
-    elif _sup.str_(b).lower() in _nsd.nstd_bases:  # custom bases
-        to_nsd = _nsd.nstd_bases.get(_sup.str_(b).lower())[0]
-        res = to_nsd(x.real, sgn, sep)
-        ult = to_nsd(x.imag, sgn, sep)
     elif b.real and not b.imag:                    # real bases
         if not x.imag:
-            res, ult = lts(tr(x, b, sgn, sep), sgn, sep), 0
+            res, ult = lts(tr(x, b, **kwargs), sgn, sep), 0
         else:
-            res = lts(tr(x.real, b, sgn, sep), sgn, sep)
-            ult = lts(tr(x.imag, b, sgn, sep), sgn, sep)
+            res = lts(tr(x.real, b, **kwargs), sgn, sep)
+            ult = lts(tr(x.imag, b, **kwargs), sgn, sep)
     elif not b.real and b.imag:                    # imaginary bases
-        res = lts(ti(mpc(x.real, x.imag), b, sgn, sep), sgn, sep)
-        ult = lts([0], sgn, sep)
+        res = lts(ti(mpc(x.real, x.imag), b, **kwargs), sgn, sep)
+        ult = lts([0], sgn, sep)  # i base values have no i part
     else: raise E
 
     return res if ult in _sup.zero_types else numStor(res, ult)
 
-def toTen(x, b, sgn='-', sep='.'):
-    "convert a string x in base b to base ten"
-    # same as the first half of rebase
+def to_ten(x, b, **kwargs):
+    """convert a string x in positional base b to base ten
+    only handles positional bases - use rebase for nonpositional bases
+    always returns a python numeric type
+    """
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     real, imag = _sup.parseInput(x)
     b = _sup.parseBase(b)
 
     E = ValueError('invalid base')
-    if b in (1, 0):                                # invalid bases
+    if b in (1, 0, -1):                            # invalid bases
         raise E
-    elif _sup.str_(b).lower() in _nsd.nstd_bases:  # custom bases
-        nsd_to = _nsd.nstd_bases.get(_sup.str_(b).lower())[1]
-        res = nsd_to(real, sgn, sep)
-        try: ult = nsd_to(imag, sgn, sep)
-        except AttributeError: ult = ''
-        result = res if not ult else (res + ult * mpc(0, 1))
     elif b.real and not b.imag:                    # real bases
-        res = _std.to_10(real, b, sgn, sep)
-        ult = _std.to_10(imag, b, sgn, sep)
+        res = _std.to_10(real, b, **kwargs)
+        ult = _std.to_10(imag, b, **kwargs)
         result = res if not ult else (res + ult * mpc(0, 1))
     elif not b.real and b.imag:                    # imaginary bases
-        result = _std.to_10(real, b, sgn, sep)
+        result = _std.to_10(real, b, **kwargs)
     else: raise E
     return result
 
-def inDecimal(num, sgn='-', sep='.', as_str=False):
+def in_decimal(num, sgn='-', sep='.', as_str=False):
     """
     Leaves num as is, but converts each symbol to its value in base 10
     will return a list unless as_str is True
@@ -202,7 +214,7 @@ def guess(n, sgn='-', sep='.'):
     if sep in lst: lst.remove(sep)
     return max(lst) + 1
 
-def numDigits(base):
+def num_digits(base):
     "returns the number of characters a base uses"
     if base.imag: base = base * mpc(base.real, -base.imag); base = base.real
     base = abs(base)  # can't use .conjugate(), gmpy2 2.0.8 will crash
@@ -214,7 +226,7 @@ def numDigits(base):
     elif base > 1: return int(_sup.ceil(base))
     else: raise E
 
-def availableBases():  # does this make any sense to have?
+def available_bases():  # does this make any sense to have?
     "print out avaiable bases"
     maxchr = _sup.maxchr
     line = 'available bases:'
@@ -229,7 +241,7 @@ def availableBases():  # does this make any sense to have?
     for i in _nsd.nstd_bases: line += '\n\t{}'.format(_sup.str_(i).lower())
     print(line)
 
-def basePrec(prec, newbase, oldbase=2):
+def base_prec(prec, newbase, oldbase=2):
     "gives precision in new base"
     if newbase.imag: newbase *= mpc(newbase.real, -newbase.imag)
     if oldbase.imag: oldbase *= mpc(oldbase.real, -oldbase.imag)

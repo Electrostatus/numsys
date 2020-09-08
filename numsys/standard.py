@@ -6,11 +6,12 @@ log, floor, ceil = _sup.log, _sup.floor, _sup.ceil
 mpc, mpf = _sup.mpc, _sup.mpf
 
 
-def to_zb(num, base, sgn='-', sep='.'):  # to integer base (Z)
+def to_zb(num, base, **kwargs):  # to integer base (Z)
     """
     converts an integer from base ten to base (integer and abs(base) > 1)
     returns a list
     """
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     if not num: return [0]
     E = ValueError('invalid base')
     if abs(base) < 2:
@@ -26,13 +27,14 @@ def to_zb(num, base, sgn='-', sep='.'):  # to integer base (Z)
     lst.reverse()  
     return lst
 
-def to_pb(num, base, sgn='-', sep='.'):  # to Positive base
+def to_pb(num, base, **kwargs):  # to Positive base
     """
     converts a real in base 10 to base (real and > 1)
     returns a list
     """  # see Ref. A from README
     # use integer conversion when both are integers (faster)
-    if int(num) == num and int(base) == base: return to_zb(num, base, sgn)
+    if int(num) == num and int(base) == base: return to_zb(num, base, **kwargs)
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     
     if not num: return [0]
     E = ValueError('invalid base')
@@ -66,13 +68,14 @@ def to_pb(num, base, sgn='-', sep='.'):  # to Positive base
         P -= 1                                # check ref if above is mentioned
     return lst
 
-def to_nb(num, base, sgn='-', sep='.'):  # to Negative base
+def to_nb(num, base, **kwargs):  # to Negative base
     """
     converts a real from base 10 to base (real and < -1)
     returns a list
     """  # see Ref. B from README
     # use integer conversion when both are integers (faster)
-    if int(num) == num and int(base) == base: return to_zb(num, base, sgn)
+    if int(num) == num and int(base) == base: return to_zb(num, base, **kwargs)
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')            
     
     if num == 0: return [0]
     E = ValueError('invalid base')
@@ -107,7 +110,7 @@ def to_nb(num, base, sgn='-', sep='.'):  # to Negative base
         P -= 1
     return lst
 
-def to_vb(num, base, sgn='-', sep='.'):  # to inVerted base
+def to_vb(num, base, **kwargs):  # to inVerted base
     """
     converts a real from base ten to base (abs(base) < 1 and base != 0)
     returns a list
@@ -119,9 +122,10 @@ def to_vb(num, base, sgn='-', sep='.'):  # to inVerted base
     # for a base 0<b<1: convert to base 1/b,
     #  shift radix to the left one column and swap all the digits
     inv = mpf(1) / mpf(base)  # invert the base, convert to base 1/B
-    if int(num) == num and int(inv) == inv: ans = to_zb(num, inv, sgn)
-    elif base < 0: ans = to_nb(num, inv, sgn, sep)
-    else: ans = to_pb(num, inv, sgn, sep)
+    if int(num) == num and int(inv) == inv: ans = to_zb(num, inv, **kwargs)
+    elif base < 0: ans = to_nb(num, inv, **kwargs)
+    else: ans = to_pb(num, inv, **kwargs)
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
 
     add_sgn = False  # handle negative values cleanly
     if sgn in ans: ans.remove(sgn); add_sgn = True
@@ -132,7 +136,7 @@ def to_vb(num, base, sgn='-', sep='.'):  # to inVerted base
     if add_sgn: ans.insert(0, sgn)
     return ans
 
-def to_rb(num, base, sgn='-', sep='.'):  # to Real base
+def to_rb(num, base, **kwargs):  # to Real base
     """
     converts a real number in base ten to a real base
     num may be a int, float, mpc or string (digits 0-9 only)
@@ -141,18 +145,19 @@ def to_rb(num, base, sgn='-', sep='.'):  # to Real base
     """
     E = ValueError('invalid base')
     #num, base = mpf(num), mpf(base)
-    if base < -1: ans = to_nb(num, base, sgn, sep)
-    elif 0 < abs(base) < 1: ans = to_vb(num, base, sgn, sep)
-    elif base > 1: ans = to_pb(num, base, sgn, sep)
+    if base < -1: ans = to_nb(num, base, **kwargs)
+    elif 0 < abs(base) < 1: ans = to_vb(num, base, **kwargs)
+    elif base > 1: ans = to_pb(num, base, **kwargs)
     else: raise E
     return ans
 
-def to_ib(num, base, sgn='-', sep='.'):  # to Imaginary base
+def to_ib(num, base, **kwargs):  # to Imaginary base
     """
     converts a complex number from base ten to imaginary base
     where base.real == 0 and base.imag != 1 or 0
     returns a list
     """  # see Refs. C, D from README
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     E = ValueError('invalid base')
     if base.real != 0:
         raise E
@@ -168,11 +173,11 @@ def to_ib(num, base, sgn='-', sep='.'):  # to Imaginary base
     # convert real and imag parts to effective base
     eb = -(abs(base) ** 2)
     if abs(base.imag) > 1:
-        real = to_nb(real, eb, sgn, sep)
-        imag = to_nb(mpf(imag) / mpf(base.imag), eb, sgn, sep)
+        real = to_nb(real, eb, **kwargs)
+        imag = to_nb(mpf(imag) / mpf(base.imag), eb, **kwargs)
     elif 0 < abs(base.imag) < 1:
-        real = to_vb(real, eb, sgn, sep)
-        imag = to_vb(mpf(imag) / mpf(base.imag), eb, sgn, sep)
+        real = to_vb(real, eb, **kwargs)
+        imag = to_vb(mpf(imag) / mpf(base.imag), eb, **kwargs)
     else: raise E
 
     # split into whole and fractional parts
@@ -201,11 +206,13 @@ def to_ib(num, base, sgn='-', sep='.'):  # to Imaginary base
     ans.extend(frc)
     return ans
 
-def to_10(num, base, sgn='-', sep='.'):
+def to_10(num, base, **kwargs):
     """
     converts a number from given base to base ten
     not valid for nonstandard bases
     """
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    
     # verify input
     if type(num).__name__ in _sup.str_types:
         num = _sup.str_to_lst(num, sgn, sep)
