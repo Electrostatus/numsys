@@ -42,7 +42,7 @@ class ComplexDecimal(object):
             else:  # real value
                 self.real = decimal.Decimal(real)
                 self.imag = decimal.Decimal(0)
-                
+
         elif type(real) in (complex, type(self)):
             self.real = decimal.Decimal(real.real)
             self.imag = decimal.Decimal(real.imag)

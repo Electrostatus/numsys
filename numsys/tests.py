@@ -74,7 +74,7 @@ class testNumsys(unittest.TestCase):
         mb = _sup.maxchr
         mx = max(125, mb // 8000)
         rnd_bases = [round(random.uniform(-mb, mb), 3) for i in range(mx)]
-        
+
         bases = filter(lambda x: abs(x) not in [1, 0], rnd_bases)
         _sup.setPrec(1500)  # will need more precision for this test
 
@@ -120,7 +120,7 @@ class testNumsys(unittest.TestCase):
                 rnd_j = complex(jr, jj)
                 self.assertEqual(rnd_i, rnd_j, msg=mesg.format(b, i, j))
 
-                       
+
     def test_nstd_int_identity(self):
         "base conversion of nonstandard bases"
         mesg = ('10 to {} to 10 conversion failed'

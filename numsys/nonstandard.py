@@ -69,8 +69,8 @@ def ze_to(x, **kwargs):
     "converts a base zero value to base ten"
     E1 = SyntaxError('base zero does not use any characters')
     global _zn
-    
-    E2_errs = ['Makes you think, doesn\'t it?', 'Wait, what?', 'Crazy, huh?', 
+
+    E2_errs = ['Makes you think, doesn\'t it?', 'Wait, what?', 'Crazy, huh?',
                'It\'s somewhat Zen, but not really', 'It\'s utter nonsense',
                'You thought this would actually return something?', 'error!',
                '...Clever girl *killed by raptors*', 'Confused? Try again.',
@@ -91,7 +91,7 @@ def ze_to(x, **kwargs):
         E2 = BaseZero(E2_errs[n])
     except Exception:
         E2 = BaseZero(E2_errs[5])
-        
+
     if x == '' or x is None:
         raise E2
     else: raise E1
@@ -141,7 +141,7 @@ def _to_mixed(x, generator, **kwargs):
     generator is a function that gives the mixed base digits via next()
     """
     if not x: return [0]
-    
+
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     gen_args = kwargs.get('gen_args', {})
 
@@ -149,7 +149,7 @@ def _to_mixed(x, generator, **kwargs):
     whl = int(n)
     if whl != n: frc = _sup.mpf(n) - int(n)
     else: frc = 0  # if not enough precision, a "fraction" might appear
-    
+
     gw = generator(**gen_args); b = next(gw)
     while not b: b = next(gw)  # base can't start at zero
 
@@ -162,7 +162,7 @@ def _to_mixed(x, generator, **kwargs):
     if not frc: return ans  # is an integer
     prc = -int(_sup.log(frc, 10)) + 1 + _sup.prec // 7 # this is a total guess
     ans.append(sep)
-    
+
     gf = generator(**gen_args); b = next(gf)
     while not b: b = next(gf)
 
@@ -182,12 +182,12 @@ def _mixed_to(n, generator, **kwargs):
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     gen_args = kwargs.get('gen_args', {})
     lst = _sup.str_to_lst(n, sgn, sep)
-    
+
     try:  # split into whole, fractional parts
         pt = lst.index(sep)
         whl, frc = lst[:pt], lst[pt + 1:]
     except ValueError: whl, frc = lst, []
-    
+
     try: whl.remove(sgn); neg = -1
     except ValueError: neg = 1
 
@@ -224,7 +224,7 @@ def _mixed_to(n, generator, **kwargs):
             try: E = SyntaxError(_sup.str_(err2a).format(_sup.digitSet[k], idx))
             except IndexError: E = SyntaxError(err2b.format(i))
             raise E
-        
+
         # the actual conversion process
         ans += j * b
         if not is_int: ans += k * (one / (b * i))
@@ -236,7 +236,7 @@ def _mixed_to(n, generator, **kwargs):
 def _const(n=10):
     "constant generator"
     while 1: yield n
-    
+
 def _count(start=0, step=1):
     "counting generator"
     while 1: yield start; start += step
@@ -631,10 +631,10 @@ def to_oz(x, **kwargs):
     lst = _to_mixed(x, _ooze, **kwargs)
     return _sup.lst_to_str(lst, sgn, sep)
 
-def oz_to(x, **kwargs):                
+def oz_to(x, **kwargs):
     "converts an ooze base number to base ten\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _ooze, sgn=sgn, sep=sep, name='ooze', sym='o')
     return num
-    
+
 nstd_bases['ooze'] = [to_oz, oz_to]

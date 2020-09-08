@@ -14,7 +14,7 @@ __doc__ = """A number base conversion system, version {}
     to a base of any real or imaginary value
 
     invalid bases are abs(base) == 1 or abs(base) == 0
-	
+
     The number of available characters are {:,}.
     If a base requires more characters, then the system will return a list
     containing the positional values in base ten.
@@ -29,7 +29,7 @@ __doc__ = """A number base conversion system, version {}
     """.format(_sup.version, _sup.maxchr)
 
 __all__ = ['rebase', 'guess', 'in_decimal', 'num_digits', # this file
-           'to_base', 'to_ten',              
+           'to_base', 'to_ten',
            'mpf', 'mpc', 'setPrec', 'setDigitSet',      # support file
            'roman', 'factorial', 'named_bases',         # nonstandard file
            ]
@@ -83,18 +83,18 @@ def rebase(num, b1, b2, **kwargs):
     # parse input
     real, imag = _sup.parseInput(num)
     b1, b2 = _sup.parseBase(b1), _sup.parseBase(b2)
-    
+
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
 
     E1 = ValueError('invalid input base')
     E2 = ValueError('invalid output base')
-    
+
     # convert input from base b1 to base ten (outputs here are numerical)
     if jokes and b1 in _nsd.joke_bases:             # joke bases
             jb = _nsd.joke_bases.get(b1)[1]
             res = jb(real, **kwargs)
             ult = '' if not imag else jb(imag, **kwargs)
-            val10 = res if not ult else (res + ult * mpc(0, 1))     
+            val10 = res if not ult else (res + ult * mpc(0, 1))
     elif b1 in (1, 0, -1):                          # invalid bases
         raise E1
     elif _sup.str_(b1).lower() in _nsd.nstd_bases:  # custom bases
@@ -104,7 +104,7 @@ def rebase(num, b1, b2, **kwargs):
         except AttributeError: ult = ''
         val10 = res if not ult else (res + ult * mpc(0, 1))
     elif ((b1.real and not b1.imag) or              # real, imag bases
-          (not b1.real and b1.imag)): 
+          (not b1.real and b1.imag)):
         val10 = to_ten(num, b1, **kwargs)
     else:  # complex base, base 0
         raise E1
@@ -116,7 +116,7 @@ def rebase(num, b1, b2, **kwargs):
     if jokes and b2 in _nsd.joke_bases:             # joke bases
             jb = _nsd.joke_bases.get(b2)[0]
             res = jb(val10.real, **kwargs)
-            ult = jb(val10.imag, **kwargs) 
+            ult = jb(val10.imag, **kwargs)
     elif _sup.str_(b2).lower() in _nsd.nstd_bases:# custom bases
         to_nsd = _nsd.nstd_bases.get(_sup.str_(b2).lower())[0]
         res = to_nsd(val10.real, **kwargs)
@@ -140,7 +140,7 @@ def to_base(x, b, **kwargs):
 
     if kwargs.get('as_numeric') and b == 10:
         return to_ten(x, 10, **kwargs)
-    
+
     lts, tr, ti = _sup.lst_to_str, _std.to_rb, _std.to_ib
     E = ValueError('invalid base')
     if b in (1, 0, -1):                            # invalid bases
@@ -190,7 +190,7 @@ def in_decimal(num, sgn='-', sep='.', as_str=False):
     if as_str:
         split = ':;|'  # just in case the sgn or sep takes these symbols
         split = split.replace(sgn, ''); split = split.replace(sep, '')
-        
+
         # if the number has both whole and fractional parts
         if sep in lst:  # should be one block; 5.6, not 5:.:6
             loc = lst.index(sep); lst.pop(loc)
@@ -201,7 +201,7 @@ def in_decimal(num, sgn='-', sep='.', as_str=False):
         if sgn in lst:
             lst.pop(0); num = lst.pop(0)
             lst.insert(0, _sup.str_().join([sgn, _sup.str_(num)]))
-            
+
         in_deci = [_sup.str_(j) for j in lst]
         output = split[0].join(in_deci)
     else: output = lst

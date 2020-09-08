@@ -9,7 +9,7 @@ import string
 
 try:  # to look for better installed modules
     #import this_is_not_a_module_name_this_is_just_for_testing
-    try:  # look for gmpy2 
+    try:  # look for gmpy2
         import gmpy2 as gm
         def log(x, b=None):
             if not b: return gm.log(x)
@@ -24,7 +24,7 @@ try:  # to look for better installed modules
             if not b: return gm.mpc(a)
             else: return gm.mpc(a, b)
         backend = 'gmpy2'
-    
+
     except ImportError:  # use mpmath instead
         from mpmath import mp as mp
         log, ceil, floor = mp.log, mp.ceil, mp.floor
@@ -36,8 +36,8 @@ try:  # to look for better installed modules
             "converts input into multiprecision complex - type mpmath.mp.mpc"
             if not b: return mp.mpc(a)
             else: return mp.mpc(a, b)
-        backend = 'mpmath' 
-    
+        backend = 'mpmath'
+
 except ImportError:  # failing those, use the built-in modules
     from math import ceil as _cil, floor as _flr
     floor, ceil = lambda x: int(_flr(x)), lambda x: int(_cil(x))
@@ -61,7 +61,7 @@ except ImportError:  # failing those, use the built-in modules
 ##    backend = None
 
 try: import nonstandard as nstd  # used in parseBase
-except ImportError: from numsys import nonstandard as nstd 
+except ImportError: from numsys import nonstandard as nstd
 
 # functions ---------------------------------------------------------------
 warnings.simplefilter('always')  # warnings in this should be rare (hopefully!)
@@ -130,7 +130,7 @@ def setPrec(prc=None):
     elif  backend == 'decimal':  # base ten precision
         dm.getcontext().prec = int(prc * log(2, 10))
     else: pass
-    
+
     prec = prc
     return prc
 
@@ -160,12 +160,12 @@ def clean(num, sgn='-', sep='.'):
     # add zero if first digit is radix
     if num[0] == sep:
         try: num = digitSet[0] + num  # str
-        except: num = [0, ] + num  # list  
-        
+        except: num = [0, ] + num  # list
+
     # restore negative sign
     if neg:
         try: num = sgn + num  # str
-        except: num = [sgn, ] + num  # list    
+        except: num = [sgn, ] + num  # list
     return num
 
 def str_to_lst(s, sgn='-', sep='.'):
@@ -173,7 +173,7 @@ def str_to_lst(s, sgn='-', sep='.'):
     # check if already a list of digits
     if type(s) == list: return s
     else: s = str_(s)
-    
+
     # error checking
     if sgn in s and s[0] != sgn:
         E = SyntaxError('negative sign is not leading the number')
@@ -271,6 +271,6 @@ version = '0.9.B'
 maxchr += 1  # base 0 uses no characters, so all of unicode is valid
 prec = setPrec(100)   # precision (in base two)
 digitSet = defaultDigitSet()
-zero_types = [0, [], [0], digitSet[0], str_(), '']  # this is reset with setDigitSet 
+zero_types = [0, [], [0], digitSet[0], str_(), '']  # this is reset with setDigitSet
 str_types = ('str', 'unicode')
 

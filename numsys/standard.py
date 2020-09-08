@@ -1,6 +1,6 @@
 "standard base conversion functions"
 try: import support as _sup
-except ImportError: from numsys import support as _sup 
+except ImportError: from numsys import support as _sup
 
 log, floor, ceil = _sup.log, _sup.floor, _sup.ceil
 mpc, mpf = _sup.mpc, _sup.mpf
@@ -16,15 +16,15 @@ def to_zb(num, base, **kwargs):  # to integer base (Z)
     E = ValueError('invalid base')
     if abs(base) < 2:
         raise E
-    
+
     num, lst, base = int(num), [], int(base)
     if num < 0 and base > 0: num *= -1; lst = [sgn]  # negatives in +bases
-    
+
     while num:
         num, d = divmod(num, base)
         if d < 0: num += 1; d -= base   # values in -bases
         lst.append(d)
-    lst.reverse()  
+    lst.reverse()
     return lst
 
 def to_pb(num, base, **kwargs):  # to Positive base
@@ -35,7 +35,7 @@ def to_pb(num, base, **kwargs):  # to Positive base
     # use integer conversion when both are integers (faster)
     if int(num) == num and int(base) == base: return to_zb(num, base, **kwargs)
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
-    
+
     if not num: return [0]
     E = ValueError('invalid base')
     if base <= 1:
@@ -44,7 +44,7 @@ def to_pb(num, base, **kwargs):  # to Positive base
     num, base = mpf(num), mpf(base) # to insure precision
     if num < 0: lst = [sgn]; num = -num  # handle negative values
     else: lst = []
-    
+
     P = ceil(log(abs(num), base)); X = num / base ** P  # setup stuff
     #while not 0 <= X < 1: P += 1; X = num / base ** P  # log should cover this
     def T(x): return base * x - floor(base * x)  # transformation function
@@ -75,8 +75,8 @@ def to_nb(num, base, **kwargs):  # to Negative base
     """  # see Ref. B from README
     # use integer conversion when both are integers (faster)
     if int(num) == num and int(base) == base: return to_zb(num, base, **kwargs)
-    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')            
-    
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+
     if num == 0: return [0]
     E = ValueError('invalid base')
     if base >= -1:
@@ -92,7 +92,7 @@ def to_nb(num, base, **kwargs):  # to Negative base
         P += 1             # the log taken above just speeds it up
         X = num / (-base) ** P
     def T(x): return -base * x - floor(-base * x - l)
-    
+
     if P <= 0:  # starting with a fractional value
         lst.extend([0, sep])
         #lst.extend(([0] * -int(P)))  # puts small values off a power
@@ -161,15 +161,15 @@ def to_ib(num, base, **kwargs):  # to Imaginary base
     E = ValueError('invalid base')
     if base.real != 0:
         raise E
-    
+
     # split input into real and imag parts
     try: real, imag = num.real, num.imag  # numeric types, named tuple
     except AttributeError:
         if len(num) == 2:  # normal tuple, list of lists
-            real, imag = num 
+            real, imag = num
         else:  # possibly a string
             real, imag = num, 0
-    
+
     # convert real and imag parts to effective base
     eb = -(abs(base) ** 2)
     if abs(base.imag) > 1:
@@ -192,7 +192,7 @@ def to_ib(num, base, **kwargs):  # to Imaginary base
 
     # interweave the parts (http://stackoverflow.com/q/24583017)
     wr, wi = list(wr), list(wi)  # whole part
-    r, i = len(wr), len(wi)  
+    r, i = len(wr), len(wi)
     l = 2 * max(r, i); ans = [0] * l
     ans[l - 2 * r + 1:: 2] = wr
     ans[l - 2 * i:: 2]  = wi
@@ -212,13 +212,13 @@ def to_10(num, base, **kwargs):
     not valid for nonstandard bases
     """
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
-    
+
     # verify input
     if type(num).__name__ in _sup.str_types:
         num = _sup.str_to_lst(num, sgn, sep)
     elif type(num) == list: pass
     else: return num
-    
+
     if base.imag:  # imag/complex bases
         s, ans, base = 1, mpc(0), mpc(base)
     elif int(base) == base and sep not in num:  # integer bases
