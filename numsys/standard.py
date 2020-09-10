@@ -243,10 +243,10 @@ def to_10(num, base, **kwargs):
     if max(num) >= chk:  # invalid characters
         mes = _sup.str_('invalid character for base {}').format(base)
         try:  # unprintable SyntaxError object?
-            errant = _sup.digitSet[max(num)]
+            errant = _sup.digitset[max(num)]
             E = SyntaxError((mes + ': {}').format(errant))
         except IndexError:  # if it gets here, digit is greater than base
-            E = SyntaxError(mes)  # and digitSet does not have that character
+            E = SyntaxError(mes)  # and digitset does not have that character
         raise E
 
     for d in num:  # conversion step (this is the definition of a base)

@@ -45,7 +45,7 @@ class testNumsys(unittest.TestCase):
         # select random valid integer bases
         mb = _sup.maxchr
         bases = filter(lambda x: abs(x) > 1, range(-mb, mb + 1))
-        _sup.setPrec(1500)  # will need more precision for this test
+        _sup.set_prec(1500)  # will need more precision for this test
 
         for b in random.sample(list(bases), max(125, mb // 8000)):
             for i in reals:
@@ -76,7 +76,7 @@ class testNumsys(unittest.TestCase):
         rnd_bases = [round(random.uniform(-mb, mb), 3) for i in range(mx)]
 
         bases = filter(lambda x: abs(x) not in [1, 0], rnd_bases)
-        _sup.setPrec(1500)  # will need more precision for this test
+        _sup.set_prec(1500)  # will need more precision for this test
 
         for b in bases:
             for i in reals:

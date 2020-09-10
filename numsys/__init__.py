@@ -30,15 +30,16 @@ __doc__ = """A number base conversion system, version {}
 
 __all__ = ['rebase', 'guess', 'in_decimal', 'num_digits', # this file
            'to_base', 'to_ten',
-           'mpf', 'mpc', 'setPrec', 'setDigitSet',      # support file
-           'roman', 'factorial', 'named_bases',         # nonstandard file
+           'mpf', 'mpc', 'set_precision', 'set_digitset', # support file
+           'roman', 'factorial', 'named_bases',           # nonstandard file
            ]
 
 # from support file
 mpf = _sup.mpf
 mpc = _sup.mpc
-setPrec = _sup.setPrec
-setDigitSet = _sup.setDigitSet
+backend = _sup.backend
+set_precision = _sup.set_prec
+set_digitset = _sup.set_digitset
 numStor = _sup.numStor
 VERSION = _sup.version
 
@@ -66,7 +67,7 @@ def rebase(num, b1, b2, **kwargs):
     output - string if no imaginary value
            - namedtuple if imaginary value (see numStor)
            - int, long, float, complex, mpc or mpf type
-             if as_numeric is True and b2 is 10 (regardless of digitSet order)
+             if as_numeric is True and b2 is 10 (regardless of digitset order)
     keywords:
         sgn - what character the negative sign is
               default '-'
@@ -79,7 +80,7 @@ def rebase(num, b1, b2, **kwargs):
     """
     jokes = kwargs.get('joke_bases')
     # if the number is zero, why do any math? return a zero
-    if not jokes and not num: return _sup.digitSet[0]
+    if not jokes and not num: return _sup.digitset[0]
 
     # parse input
     real, imag = _sup.parseInput(num)

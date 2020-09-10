@@ -5,9 +5,9 @@ from os import urandom  # used in ze_to
 
 nstd_bases = {}  # {'name': [func from 10 to base, func from base to 10]}
 
-# functions all take a number, sgn and sep - but not all are used
+# functions all take a number and kwargs
 # this is to generalize the input and make it easy to call from
-# nstd_bases; i.e. value = nstd_bases[name][0](number, sgn, sep)
+# nstd_bases; i.e. value = nstd_bases[name][0](number, **kwargs)
 
 def addBase(name, func_to_base, func_from_base):
     """
@@ -29,14 +29,13 @@ joke_bases = {}
 def to_p1(n, **kwargs):
     "converts an integer in base ten to base one"
     sgn = kwargs.get('sgn', '-')
-    if n < 0: return sgn + (_sup.digitSet[1] * int(-n))
-    elif n > 0: return _sup.digitSet[1] * int(n)
+    if n < 0: return sgn + (_sup.digitset[1] * int(-n))
+    elif n > 0: return _sup.digitset[1] * int(n)
     else: return ''
 
 def p1_to(n, **kwargs):
     "converts a base one value to base ten"
     sgn = kwargs.get('sgn', '-')
-    print(n, len(n))
     if sgn in n: return -(len(n) - 1)
     else: return len(n)
 
@@ -45,8 +44,8 @@ joke_bases[1] = [to_p1, p1_to]
 ## --------------- base negative one -----------------------
 def to_n1(n, **kwargs):
     "converts an integer in base ten to base negative one"
-    if n > 0: return _sup.digitSet[1] * (int(n) * 2 - 1)
-    elif n < 0: return _sup.digitSet[1] * (-int(n) * 2)
+    if n > 0: return _sup.digitset[1] * (int(n) * 2 - 1)
+    elif n < 0: return _sup.digitset[1] * (-int(n) * 2)
     else: return ''
 
 def n1_to(n, **kwargs):
@@ -217,11 +216,11 @@ def _mixed_to(n, generator, **kwargs):
 
     for idx, (j, k) in enumerate(zip(whl[::-1], frc)):
         if j >= i:  # whole value error checking
-            try: E = SyntaxError(_sup.str_(err1a).format(_sup.digitSet[j], idx))
+            try: E = SyntaxError(_sup.str_(err1a).format(_sup.digitset[j], idx))
             except IndexError: E = SyntaxError(err1b.format(i))
             raise E
         if k >= i:  # fractional value error checking
-            try: E = SyntaxError(_sup.str_(err2a).format(_sup.digitSet[k], idx))
+            try: E = SyntaxError(_sup.str_(err2a).format(_sup.digitset[k], idx))
             except IndexError: E = SyntaxError(err2b.format(i))
             raise E
 
@@ -427,8 +426,7 @@ nstd_bases['catalan'] = [to_ct, ct_to]
 
 ## --------------- lucas base ------------------------------
 def _lucas():
-    "lucas number generator"
-    l = [2, 1]
+    "lucas number generator"; l = [2, 1]
     while 1:
         l.append(sum(l))
         yield l.pop(0)
@@ -472,14 +470,16 @@ def nb_to(x, **kwargs):
 nstd_bases['noble'] = [to_nb, nb_to]
 
 ## --------------- ??? base --------------------------------
-def _whatever(n=13):  # prime damped (but is is critically damped?)
-    "I'm making up this sequence"  # made up Sat. evening, Sep 5th, 2020
-    n = abs(n); n = 1 if not n else n  # only allow a finite amount of primes!
+def _whatever(n=13, mode='stable'):  # almost like a damped spring
+    "I'm making up this sequence"    # (if mode is stable)
+    m = {'stable': 1, 'decay':0}.get(mode.lower(), 'stable')
+    n = abs(n); n = 1 if not n else n  # no infinite primes here!
     init = list(_pgen(n))[::-1]  # backwards 'cause I can! so there!
-    while 1:  # how many steps to stable for n? and what's the stable point?
-        init.append(sum(init) // n)  # if this line before yield, stable
-        yield init.pop(0)            # if after, then decay to 0
-              # how many steps to 0 for n?
+    while 1:
+        if not m: init.pop(0)  # how many steps to 0 for n?
+        avg = sum(init) // n   # how many steps to stable for n?
+        if m: init.pop(0)      # what's the stable point for n?
+        init.append(avg); yield avg
 
 
 def to_wh(x, **kwargs):
@@ -494,10 +494,11 @@ def wh_to(x, **kwargs):
     num = _mixed_to(x, _whatever, sgn=sgn, sep=sep, name='???', sym='?')
     return num
 
+nstd_bases['???'] = [to_wh, wh_to]
+
 ## --------------- bell base -------------------------------
 def _bell():
-    "yields bell numbers"
-    l = [1]
+    "yields bell numbers"; l = [1]
     while 1:
         yield l[-1]
         for i in range(len(l) - 1):
@@ -584,7 +585,7 @@ def _caterer():
     n = 0  # you're the worst caterer we've ever had!
     while 1: yield (n * n + n + 2) // 2; n += 1
 
-    
+
 def to_yc(x, **kwargs):
     "converts any number in base ten to the lazy caterer's base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -636,7 +637,7 @@ def _ooze():
         if c >= d: mx -= 1; c = 0
         if mx < mn: mx = mn
 
-    
+
 def to_oz(x, **kwargs):
     "converts any number in base ten to the ooze base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')

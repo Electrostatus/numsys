@@ -95,19 +95,19 @@ def rround(n, d=5):
     ln = log(abs(n), 10) if n != 0 else 0
     return round(float(n), -int(floor(ln)) + d)
 
-def defaultDigitSet(full=True):
-    "returns the default digit set as a list"
+def default_digitset(full=True):
+    "returns the default digitset as a list"
     digits = list(string.printable.swapcase())
     if full: digits += list(map(chr_, range(maxchr)))
     return unique(digits)
 
-def setDigitSet(seq):
-    "sets digitSet to given digits in seq"
-    global digitSet, zero_types
-    digitSet = unique(seq)
-    zero_types = [0, [], [0], digitSet[0], str_(), '']
+def set_digitset(seq):
+    "sets digitset to given digits in seq"
+    global digitset, zero_types
+    digitset = unique(seq)
+    zero_types = [0, [], [0], digitset[0], str_(), '']
 
-def setPrec(prc=None):
+def set_prec(prc=None):
     """
     set the precision
     pass None to get current precision
@@ -138,7 +138,7 @@ def setPrec(prc=None):
 def clean(num, sgn='-', sep='.'):
     """removes leading and trailing zeros from a list
     pass False to sgn and sep if known to NOT to be in num"""
-    global digitSet
+    global digitset
 
     # handle negative sign
     if sgn and sgn in num:
@@ -147,7 +147,7 @@ def clean(num, sgn='-', sep='.'):
         neg = True
     else: neg = False
 
-    for zero in (digitSet[0], 0):  # remove zeros
+    for zero in (digitset[0], 0):  # remove zeros
         while num[0] == zero and len(num) > 1 and num[1] != sep:  # leading
             num = num[1:]
         if sep and sep in num:  # trailing
@@ -160,7 +160,7 @@ def clean(num, sgn='-', sep='.'):
 
     # add zero if first digit is radix
     if num[0] == sep:
-        try: num = digitSet[0] + num  # str
+        try: num = digitset[0] + num  # str
         except: num = [0, ] + num  # list
 
     # restore negative sign
@@ -192,9 +192,9 @@ def str_to_lst(s, sgn='-', sep='.'):
         if char == sgn: val = sgn  # minus sign
         elif char == sep: val = sep  # radix
         else:
-            try: val = digitSet.index(char)  # digit value
-            except ValueError:  # char not in digitSet
-                E = ValueError('unknown character/character not in digitSet')
+            try: val = digitset.index(char)  # digit value
+            except ValueError:  # char not in digitset
+                E = ValueError('unknown character/character not in digitset')
                 raise E
         lst.append(val)
     return lst
@@ -217,7 +217,7 @@ def lst_to_str(lst, sgn='-', sep='.'):
         has_sep = False
 
     try:  # map values in list to corresponding characters
-        digit_get = digitSet.__getitem__
+        digit_get = digitset.__getitem__
         num_str = ((sgn if has_sgn else emp) +
                    emp.join(map(digit_get, whl)) +
                    (sep + emp.join(map(digit_get, frc)) if frc else emp))
@@ -291,8 +291,8 @@ references = {'A': {'ref': u'A. Rényi, "Representations for real numbers '
 # constants ---------------------------------------------------------------
 version = '0.9.C'
 maxchr += 1  # base 0 uses no characters, so all of unicode is valid
-prec = setPrec(100)   # precision (in base two)
-digitSet = defaultDigitSet()
-zero_types = [0, [], [0], digitSet[0], str_(), '']  # this is reset with setDigitSet
+prec = set_prec(100)   # precision (in base two)
+digitset = default_digitset()
+zero_types = [0, [], [0], digitset[0], str_(), '']  # this is reset with setDigitSet
 str_types = ('str', 'unicode')
 
