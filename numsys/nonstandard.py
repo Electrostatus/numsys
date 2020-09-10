@@ -232,23 +232,46 @@ def _mixed_to(n, generator, **kwargs):
     return ans * neg
 
 
-## --------------- generators ------------------------------
+## --------------- test base -------------------------------
 def _const(n=10):
     "constant generator"
     while 1: yield n
 
+
+def to_tn(x, **kwargs):
+    "base ten to \"mixed\" base ten - only for testing"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _const, sgn=sgn, sep=sep)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def tn_to(x, **kwargs):
+    "\"mixed\" base ten to base ten - only for testing"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    num = _mixed_to(x, _const, sgn=sgn, sep=sep, name='ten')
+    return num
+
+## --------------- factorial base --------------------------
 def _count(start=0, step=1):
     "counting generator"
     while 1: yield start; start += step
 
-def _gfib(n=0):
-    "generalized fibonacci sequence generator"
-    n = abs(n) + 1
-    fseq = [0] * n + [1]
-    while 1:
-        f = sum(fseq[-(n + 1):])
-        fseq.append(f); yield fseq.pop(0)
 
+def to_fc(x, **kwargs):
+    "converts any number in base ten to factorial base\nreturns a string"
+    # largest value that can be made using N digits is (N*N!)-1
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _count, **kwargs)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def fc_to(x, **kwargs):
+    "converts a factorial base number to base ten"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    num = _mixed_to(x, _count, sgn=sgn, sep=sep, name='factorial', sym='!')
+    return num
+
+nstd_bases['factorial'] = [to_fc, fc_to]
+
+## --------------- primorial base --------------------------
 def _wpps():
     """2-7 wheel postponed prime sieve, yields prime and wheel index
     do not call this directly, instead call pgen
@@ -289,110 +312,7 @@ def _pgen(amt=None):
             c = len(init); w = _wpps()
             while c < a: p, i = next(w); yield p; c += 1
 
-def _catalan():
-    "catalan number generator"
-    ni, i = 1, 0; nj, j = 1, 1; nk, k = 1, 0
-    while 1:
-        yield ni // (nj * nk)
-        i += 1; ni *= i; i += 1; ni *= i
-        j += 1; nj *= j; k += 1; nk *= k
 
-def _lucas():
-    "lucas number generator"
-    l = [2, 1]
-    while 1:
-        l.append(sum(l))
-        yield l.pop(0)
-
-def _noble():
-    "yields full nucleon shell levels (\"Magic\")"
-    i = 0  # https://en.wikipedia.org/wiki/Magic_number_(physics)
-    mgc = lambda n: (2*n**3 + 12*n**2 + 25*n - 6 + (-1)**n*(3*n + 6))//12
-    while 1:
-        yield mgc(i); i += 1
-
-def _whatever(n=13):  # prime damped (but is is critically damped?)
-    "I'm making up this sequence"  # made up Sat. evening, Sep 5th, 2020
-    n = abs(n); n = 1 if not n else n  # only allow a finite amount of primes!
-    init = list(_pgen(n))[::-1]  # backwards 'cause I can! so there!
-    while 1:  # how many steps to stable for n? and what's the stable point?
-        init.append(sum(init) // n)  # if this line before yield, stable
-        yield init.pop(0)            # if after, then decay to 0
-              # how many steps to 0 for n?
-
-def _bell():
-    "yields bell numbers"
-    l = [1]
-    while 1:
-        yield l[-1]
-        for i in range(len(l) - 1):
-            l[i + 1] = l[i] + l[i + 1]
-        l.insert(0, l[-1])
-
-def _simp(n=0):
-    "n-simplex number generator"
-    ni = 1; i = 1  # or are these figurate numbers of triangular type?
-    while i < n: ni *= i; i += 1
-    f = ni; nk = 1; k = 1
-    while 1:
-        yield ni // (f * nk)
-        ni *= i; i += 1
-        nk *= k; k += 1
-
-def _caterer():
-    "yields lazy caterer's sequence (lazily!)"
-    n = 0  # you're the worst caterer we've ever had!
-    while 1: yield (n * n + n + 2) // 2; n += 1
-
-def _syl():
-    "sylvester's sequence generator"
-    s = 1; yield 2
-    while 1: s *= (s + 1); yield s + 1
-
-def _ooze():  # ooze base requested by brother
-    "the ooze base generator"
-    n = 10  # starting value
-    mx, stch = 10, 1  # max value and stretch
-    mn, d, c = 2, 1, 1  # min value (must be > 1), decay amount, decay count
-    stp, sgn = 1, -1  # step and sign
-    while 1:
-        for i in range(stch): yield n
-        n += (stp * sgn)
-        if n < 1: n = 1; sgn = -sgn; stch += stch
-        if n > mx: n = mx; sgn = -sgn; c += 1
-        if c >= d: mx -= 1; c = 0
-        if mx < mn: mx = mn
-
-## --------------- test base -------------------------------
-def to_tn(x, **kwargs):
-    "base ten to \"mixed\" base ten - only for testing"
-    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
-    lst = _to_mixed(x, _const, sgn=sgn, sep=sep)
-    return _sup.lst_to_str(lst, sgn, sep)
-
-def tn_to(x, **kwargs):
-    "\"mixed\" base ten to base ten - only for testing"
-    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
-    num = _mixed_to(x, _const, sgn=sgn, sep=sep, name='ten')
-    return num
-
-## --------------- factorial base --------------------------
-def to_fc(x, **kwargs):
-    "converts any number in base ten to factorial base\nreturns a string"
-    # largest value that can be made using N digits is (N*N!)-1
-    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
-    lst = _to_mixed(x, _count, **kwargs)
-    return _sup.lst_to_str(lst, sgn, sep)
-
-def fc_to(x, **kwargs):
-    "converts a factorial base number to base ten"
-    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
-    num = _mixed_to(x, _count, sgn=sgn, sep=sep, name='factorial', sym='!')
-    return num
-
-nstd_bases['factorial'] = [to_fc, fc_to]
-
-## --------------- primorial base --------------------------
 def to_pm(x, **kwargs):
     "converts any number in base ten to primorial base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -408,6 +328,15 @@ def pm_to(x, **kwargs):
 nstd_bases['primorial'] = [to_pm, pm_to]
 
 ## --------------- fibonacci base --------------------------
+def _gfib(n=0):
+    "generalized fibonacci sequence generator"
+    n = abs(n) + 1
+    fseq = [0] * n + [1]
+    while 1:
+        f = sum(fseq[-(n + 1):])
+        fseq.append(f); yield fseq.pop(0)
+
+
 def to_fb(x, **kwargs):
     "converts any number in base ten to fibonacci base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -463,16 +392,25 @@ def to_fbn(x, **kwargs):
     return _sup.lst_to_str(lst, sgn, sep)
 
 def fbn_to(x, **kwargs):
-    "converts a tetranacci base number to base ten\nreturns a string"
+    "converts a nth-nacci base number to base ten\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     n = kwargs.get('n', 5)
     num = _mixed_to(x, _gfib, sgn=sgn, sep=sep, name='n-nacci',
                     sym='F', gen_args={'n':n-2})
     return num
 
-#nstd_bases['nnacci'] = [to_fbn, fbn_to]
+nstd_bases['n-nacci'] = [to_fbn, fbn_to]
 
 ## --------------- catalan base ----------------------------
+def _catalan():
+    "catalan number generator"
+    ni, i = 1, 0; nj, j = 1, 1; nk, k = 1, 0
+    while 1:
+        yield ni // (nj * nk)
+        i += 1; ni *= i; i += 1; ni *= i
+        j += 1; nj *= j; k += 1; nk *= k
+
+
 def to_ct(x, **kwargs):
     "converts any number in base ten to catalan base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -488,6 +426,14 @@ def ct_to(x, **kwargs):
 nstd_bases['catalan'] = [to_ct, ct_to]
 
 ## --------------- lucas base ------------------------------
+def _lucas():
+    "lucas number generator"
+    l = [2, 1]
+    while 1:
+        l.append(sum(l))
+        yield l.pop(0)
+
+
 def to_lc(x, **kwargs):
     "converts any number in base ten to lucas base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -503,6 +449,14 @@ def lc_to(x, **kwargs):
 nstd_bases['lucas'] = [to_lc, lc_to]
 
 ## --------------- magic base ------------------------------
+def _noble():
+    "yields full nucleon shell levels (\"Magic\")"
+    i = 0  # https://en.wikipedia.org/wiki/Magic_number_(physics)
+    mgc = lambda n: (2*n**3 + 12*n**2 + 25*n - 6 + (-1)**n*(3*n + 6))//12
+    while 1:
+        yield mgc(i); i += 1
+
+
 def to_nb(x, **kwargs):
     "converts any number in base ten to noble base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -518,6 +472,16 @@ def nb_to(x, **kwargs):
 nstd_bases['noble'] = [to_nb, nb_to]
 
 ## --------------- ??? base --------------------------------
+def _whatever(n=13):  # prime damped (but is is critically damped?)
+    "I'm making up this sequence"  # made up Sat. evening, Sep 5th, 2020
+    n = abs(n); n = 1 if not n else n  # only allow a finite amount of primes!
+    init = list(_pgen(n))[::-1]  # backwards 'cause I can! so there!
+    while 1:  # how many steps to stable for n? and what's the stable point?
+        init.append(sum(init) // n)  # if this line before yield, stable
+        yield init.pop(0)            # if after, then decay to 0
+              # how many steps to 0 for n?
+
+
 def to_wh(x, **kwargs):
     "converts any number in base ten to ???"  # evenually base 10
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -531,6 +495,16 @@ def wh_to(x, **kwargs):
     return num
 
 ## --------------- bell base -------------------------------
+def _bell():
+    "yields bell numbers"
+    l = [1]
+    while 1:
+        yield l[-1]
+        for i in range(len(l) - 1):
+            l[i + 1] = l[i] + l[i + 1]
+        l.insert(0, l[-1])
+
+
 def to_bl(x, **kwargs):
     "converts any number in base ten to bell base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -546,6 +520,17 @@ def bl_to(x, **kwargs):
 nstd_bases['bell'] = [to_bl, bl_to]
 
 ## --------------- triangular base -------------------------
+def _simp(n=0):
+    "n-simplex number generator"
+    ni = 1; i = 1  # or are these figurate numbers of triangular type?
+    while i < n: ni *= i; i += 1
+    f = ni; nk = 1; k = 1
+    while 1:
+        yield ni // (f * nk)
+        ni *= i; i += 1
+        nk *= k; k += 1
+
+
 def to_tr(x, **kwargs):
     "converts any number in base ten to triangular base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -594,6 +579,12 @@ def pt_to(x, **kwargs):
 nstd_bases['pentatope'] = [to_pt, pt_to]
 
 ## --------------- lazy caterer's base ---------------------
+def _caterer():
+    "yields lazy caterer's sequence (lazily!)"
+    n = 0  # you're the worst caterer we've ever had!
+    while 1: yield (n * n + n + 2) // 2; n += 1
+
+    
 def to_yc(x, **kwargs):
     "converts any number in base ten to the lazy caterer's base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -609,6 +600,12 @@ def yc_to(x, **kwargs):
 nstd_bases['caterer'] = [to_yc, yc_to]
 
 ## --------------- sylvester base --------------------------
+def _syl():
+    "sylvester's sequence generator"
+    s = 1; yield 2
+    while 1: s *= (s + 1); yield s + 1
+
+
 def to_sy(x, **kwargs):
     "converts any number in base ten to sylvester base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -625,6 +622,21 @@ nstd_bases['sylvester'] = [to_sy, sy_to]
 
 ## --------------- ooze base -------------------------------
 # brother wanted an "ooze" base - so here's a base that slowly smears out
+def _ooze():
+    "the ooze base generator"
+    n = 10  # starting value
+    mx, stch = 10, 1  # max value and stretch
+    mn, d, c = 2, 1, 1  # min value (must be > 1), decay amount, decay count
+    stp, sgn = 1, -1  # step and sign
+    while 1:
+        for i in range(stch): yield n
+        n += (stp * sgn)
+        if n < 1: n = 1; sgn = -sgn; stch += stch
+        if n > mx: n = mx; sgn = -sgn; c += 1
+        if c >= d: mx -= 1; c = 0
+        if mx < mn: mx = mn
+
+    
 def to_oz(x, **kwargs):
     "converts any number in base ten to the ooze base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')

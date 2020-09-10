@@ -48,6 +48,7 @@ roman_to = _nsd.ro_to
 factorial = _nsd.to_fc
 factorial_to = _nsd.fc_to
 named_bases = list(_nsd.nstd_bases.keys())
+prime_gen = _nsd._pgen
 
 
 def rebase(num, b1, b2, **kwargs):
