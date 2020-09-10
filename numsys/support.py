@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 "supporting functions and variables for numsys"
 
 
@@ -266,8 +267,29 @@ def parseBase(b):
     else: pass
     return b
 
+# refs --------------------------------------------------------------------
+references = {'A': {'ref': u'A. Rényi, "Representations for real numbers '
+                    'and their ergodic properties", Acta Mathematica Acad'
+                    'emic Sci. Hungar., 1957, vol. 8, pp. 433-493',
+                    'link': 'https://doi.org/10.1007/BF02020331'},
+              'B': {'ref': u'S. Ito, T. Sadahiro, "Beta-expansions with n'
+                    'egative bases", Integers, 2009, vol. 9, pp. 239-259',
+                    'link': 'https://doi.org/10.1515/INTEG.2009.023'},
+              'C': {'ref': u'D. Knuth, "An Imaginary Number System", Comm'
+                    'unications of the ACM, 1960, vol. 3, pp. 245-247',
+                    'link': 'https://doi.org/10.1145/367177.367233'},
+              'D': {'ref': u'V. Grünwald, "Intorno all\'aritmetica dei si'
+                    'stemi numerici a base negativa con particolare rigua'
+                    'rdo al sistema numerico a base negativo-decimale per'
+                    ' lo studio delle sue analogie coll\'aritmetica ordin'
+                    'aria (decimale)", Giornale di matematiche di Battagl'
+                    'ini, 1885, vol. 23, pp. 203-221', 'link': ''},
+              'E': {'ref': u'P. Herd, "Imaginary Number Bases"',
+                    'link': 'https://arxiv.org/abs/1701.04506'},
+              }
+
 # constants ---------------------------------------------------------------
-version = '0.9.B'
+version = '0.9.C'
 maxchr += 1  # base 0 uses no characters, so all of unicode is valid
 prec = setPrec(100)   # precision (in base two)
 digitSet = defaultDigitSet()

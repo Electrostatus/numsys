@@ -66,12 +66,12 @@ def rebase(num, b1, b2, **kwargs):
            - namedtuple if imaginary value (see numStor)
            - int, long, float, complex, mpc or mpf type
              if as_numeric is True and b2 is 10 (regardless of digitSet order)
-    flags:
+    keywords:
         sgn - what character the negative sign is
               default '-'
         sep - what character the radix point (fractional separator) is
               default '.'
-        as_numeric - return will be a python numeric type is b2 is 10
+        as_numeric - return will be a python numeric type if b2 is 10
               default False
         joke_bases - True/False - allow bases 1, 0, -1 to be valid
               default False
@@ -91,10 +91,10 @@ def rebase(num, b1, b2, **kwargs):
 
     # convert input from base b1 to base ten (outputs here are numerical)
     if jokes and b1 in _nsd.joke_bases:             # joke bases
-            jb = _nsd.joke_bases.get(b1)[1]
-            res = jb(real, **kwargs)
-            ult = '' if not imag else jb(imag, **kwargs)
-            val10 = res if not ult else (res + ult * mpc(0, 1))
+        jb = _nsd.joke_bases.get(b1)[1]
+        res = jb(real, **kwargs)
+        ult = '' if not imag else jb(imag, **kwargs)
+        val10 = res if not ult else (res + ult * mpc(0, 1))
     elif b1 in (1, 0, -1):                          # invalid bases
         raise E1
     elif _sup.str_(b1).lower() in _nsd.nstd_bases:  # custom bases
