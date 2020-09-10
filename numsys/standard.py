@@ -31,7 +31,7 @@ def to_pb(num, base, **kwargs):  # to Positive base
     """
     converts a real in base 10 to base (real and > 1)
     returns a list
-    """  # see Ref. A from README or support.references
+    """  # see Ref. A, E from README or support.references
     # use integer conversion when both are integers (faster)
     if int(num) == num and int(base) == base: return to_zb(num, base, **kwargs)
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -72,7 +72,7 @@ def to_nb(num, base, **kwargs):  # to Negative base
     """
     converts a real from base 10 to base (real and < -1)
     returns a list
-    """  # see Ref. B from README or support.references
+    """  # see Ref. B, E from README or support.references
     # use integer conversion when both are integers (faster)
     if int(num) == num and int(base) == base: return to_zb(num, base, **kwargs)
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -156,7 +156,7 @@ def to_ib(num, base, **kwargs):  # to Imaginary base
     converts a complex number from base ten to imaginary base
     where base.real == 0 and base.imag != 1 or 0
     returns a list
-    """  # see Refs. C, D from README or support.references
+    """  # see Refs. C, D, E from README or support.references
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     E = ValueError('invalid base')
     if base.real != 0:
