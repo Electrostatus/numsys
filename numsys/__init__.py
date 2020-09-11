@@ -83,8 +83,8 @@ def rebase(num, b1, b2, **kwargs):
     if not jokes and not num: return _sup.digitset[0]
 
     # parse input
-    real, imag = _sup.parseInput(num)
-    b1, b2 = _sup.parseBase(b1), _sup.parseBase(b2)
+    real, imag = _sup.parse_input(num)
+    b1, b2 = _sup.parse_base(b1), _sup.parse_base(b2)
 
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
 
@@ -138,7 +138,7 @@ def to_base(x, b, **kwargs):
     only handles positional bases - use rebase for nonpositional bases
     """
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
-    x, b = _sup.parseBase(x), _sup.parseBase(b)
+    x, b = _sup.parse_base(x), _sup.parse_base(b)
 
     if kwargs.get('as_numeric') and b == 10:
         return to_ten(x, 10, **kwargs)
@@ -166,8 +166,8 @@ def to_ten(x, b, **kwargs):
     always returns a python numeric type
     """
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
-    real, imag = _sup.parseInput(x)
-    b = _sup.parseBase(b)
+    real, imag = _sup.parse_input(x)
+    b = _sup.parse_base(b)
 
     E = ValueError('invalid base')
     if b in (1, 0, -1):                            # invalid bases

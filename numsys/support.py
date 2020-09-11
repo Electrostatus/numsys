@@ -11,6 +11,7 @@ import string
 try:  # to look for better installed modules
     #import this_is_not_a_module_name_this_is_just_for_testing
     try:  # look for gmpy2
+        #import this_is_also_not_a_module_but_for_testing
         import gmpy2 as gm
         def log(x, b=None):
             if not b: return gm.log(x)
@@ -42,7 +43,9 @@ try:  # to look for better installed modules
 except ImportError:  # failing those, use the built-in modules
     from math import ceil as _cil, floor as _flr
     floor, ceil = lambda x: int(_flr(x)), lambda x: int(_cil(x))
-    import decimal as dm, complex_decimal as cd
+    import decimal as dm
+    try: import complex_decimal as cd
+    except ImportError: from numsys import complex_decimal as cd
     def log(x, b=None):
         if not b: return mpf(x).ln()
         else: return mpf(x).ln() / mpf(b).ln()
@@ -61,7 +64,7 @@ except ImportError:  # failing those, use the built-in modules
 ##    mpf, mpc = float, complex
 ##    backend = None
 
-try: import nonstandard as nstd  # used in parseBase
+try: import nonstandard as nstd  # used in parse_base
 except ImportError: from numsys import nonstandard as nstd
 
 # functions ---------------------------------------------------------------
@@ -104,8 +107,8 @@ def default_digitset(full=True):
 def set_digitset(seq):
     "sets digitset to given digits in seq"
     global digitset, zero_types
-    digitset = unique(seq)
-    zero_types = [0, [], [0], digitset[0], str_(), '']
+    digitset = unique(seq)  # be a tuple? but tuple has slower access time
+    zero_types = [0, [], [0], digitset[0], str_(), '']  # than a list - curious
 
 def set_prec(prc=None):
     """
@@ -240,7 +243,7 @@ def lst_to_str(lst, sgn='-', sep='.'):
     ep = sep if has_sep else has_sep
     return clean(num_str, gn, ep)
 
-def parseInput(x):
+def parse_input(x):
     "parse a generic input to real, imag parts"
     name = type(x).__name__
     if name in str_types:
@@ -252,7 +255,7 @@ def parseInput(x):
         except AttributeError: real, imag = x, 0  # anything else
     return real, imag
 
-def parseBase(b):
+def parse_base(b):
     "parse a numeric input"
     name = type(b).__name__
     if name in str_types:
@@ -293,6 +296,6 @@ version = '0.9.C'
 maxchr += 1  # base 0 uses no characters, so all of unicode is valid
 prec = set_prec(100)   # precision (in base two)
 digitset = default_digitset()
-zero_types = [0, [], [0], digitset[0], str_(), '']  # this is reset with setDigitSet
+zero_types = [0, [], [0], digitset[0], str_(), '']  # this is reset with set_digitset
 str_types = ('str', 'unicode')
 

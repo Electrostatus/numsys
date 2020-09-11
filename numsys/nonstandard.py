@@ -483,7 +483,7 @@ def _whatever(n=13, mode='stable'):  # almost like a damped spring
 
 
 def to_wh(x, **kwargs):
-    "converts any number in base ten to ???"  # evenually base 10
+    "converts any number in base ten to ???"  # eventually base 10
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     lst = _to_mixed(x, _whatever, **kwargs)
     return _sup.lst_to_str(lst, sgn, sep)

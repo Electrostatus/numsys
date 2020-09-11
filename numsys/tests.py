@@ -45,7 +45,7 @@ class testNumsys(unittest.TestCase):
         # select random valid integer bases
         mb = _sup.maxchr
         bases = filter(lambda x: abs(x) > 1, range(-mb, mb + 1))
-        _sup.set_prec(1500)  # will need more precision for this test
+        _sup.set_prec(1000)  # will need more precision for this test
 
         for b in random.sample(list(bases), max(125, mb // 8000)):
             for i in reals:
@@ -76,7 +76,7 @@ class testNumsys(unittest.TestCase):
         rnd_bases = [round(random.uniform(-mb, mb), 3) for i in range(mx)]
 
         bases = filter(lambda x: abs(x) not in [1, 0], rnd_bases)
-        _sup.set_prec(1500)  # will need more precision for this test
+        _sup.set_prec(1000)  # will need more precision for this test
 
         for b in bases:
             for i in reals:
@@ -109,6 +109,7 @@ class testNumsys(unittest.TestCase):
         rnd_bases = [round(random.uniform(-mb, mb), 3) for i in range(mx)]
         bases = filter(lambda x: abs(x) not in [1, 0], rnd_bases)
 
+        _sup.set_prec(250)
         for b in bases:
             b = complex(0, b)
             for i in cmpx:
@@ -139,4 +140,21 @@ class testNumsys(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    print('backend: ' + _sup.backend)
+    # python 3.8.5:
+    # testing just test_imag_cmpx_identity (all others commented out):
+    # gmpy2 (v2.0.8):                        Ran 1 test in 22.653s (22 - 36s)
+    # mpmath (v1.1.0):                       Ran 1 test in  2.905s (2.7 - 3.3s)
+    # decimal + own complex_decimal.py file: Ran 1 test in 4.430s (4.4 - 4.6s)
+    # python 2.7.10:
+    # gmpy2 (v2.0.8):                        Ran 1 test in 15.423s (15 - 26s)
+    # mpmath (v1.1.0):                       Ran 1 test in 5.623s  (4.6 - 5.6s)
+    # decimal + own complex_decimal.py file: Ran 1 test in 58.266s (52 - 58s)
+    #
+    # each was run at least three times, sometimes more
+    # all tried 70 random bases at a precision of 250
+    # and here I thought gmpy2 would be the fastest for complex
+    # perhaps drop the optional use of gmpy2 or mpmath?
+    # though, gmpy2 is far faster with just floats than decimal, and are people
+    # going to be using complex values more often than reals?
     unittest.main(verbosity=2)
