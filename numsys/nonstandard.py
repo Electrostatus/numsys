@@ -21,7 +21,7 @@ def addBase(name, func_to_base, func_from_base):
                      x (the string input), **kwargs
     """
     global nstd_bases
-    nstd_bases[name] = [func_to_base, func_from_base]
+    nstd_bases[name.lower()] = [func_to_base, func_from_base]
 
 joke_bases = {}
 
@@ -236,7 +236,6 @@ def _const(n=10):
     "constant generator"
     while 1: yield n
 
-
 def to_tn(x, **kwargs):
     "base ten to \"mixed\" base ten - only for testing"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -253,7 +252,6 @@ def tn_to(x, **kwargs):
 def _count(start=0, step=1):
     "counting generator"
     while 1: yield start; start += step
-
 
 def to_fc(x, **kwargs):
     "converts any number in base ten to factorial base\nreturns a string"
@@ -311,7 +309,6 @@ def _pgen(amt=None):
             c = len(init); w = _wpps()
             while c < a: p, i = next(w); yield p; c += 1
 
-
 def to_pm(x, **kwargs):
     "converts any number in base ten to primorial base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -334,7 +331,6 @@ def _gfib(n=0):
     while 1:
         f = sum(fseq[-(n + 1):])
         fseq.append(f); yield fseq.pop(0)
-
 
 def to_fb(x, **kwargs):
     "converts any number in base ten to fibonacci base\nreturns a string"
@@ -409,7 +405,6 @@ def _catalan():
         i += 1; ni *= i; i += 1; ni *= i
         j += 1; nj *= j; k += 1; nk *= k
 
-
 def to_ct(x, **kwargs):
     "converts any number in base ten to catalan base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -430,7 +425,6 @@ def _lucas():
     while 1:
         l.append(sum(l))
         yield l.pop(0)
-
 
 def to_lc(x, **kwargs):
     "converts any number in base ten to lucas base\nreturns a string"
@@ -453,7 +447,6 @@ def _noble():
     mgc = lambda n: (2*n**3 + 12*n**2 + 25*n - 6 + (-1)**n*(3*n + 6))//12
     while 1:
         yield mgc(i); i += 1
-
 
 def to_nb(x, **kwargs):
     "converts any number in base ten to noble base\nreturns a string"
@@ -481,7 +474,6 @@ def _whatever(n=13, mode='stable'):  # almost like a damped spring
         if m: init.pop(0)      # what's the stable point for n?
         init.append(avg); yield avg
 
-
 def to_wh(x, **kwargs):
     "converts any number in base ten to ???"  # eventually base 10
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -504,7 +496,6 @@ def _bell():
         for i in range(len(l) - 1):
             l[i + 1] = l[i] + l[i + 1]
         l.insert(0, l[-1])
-
 
 def to_bl(x, **kwargs):
     "converts any number in base ten to bell base\nreturns a string"
@@ -530,7 +521,6 @@ def _simp(n=0):
         yield ni // (f * nk)
         ni *= i; i += 1
         nk *= k; k += 1
-
 
 def to_tr(x, **kwargs):
     "converts any number in base ten to triangular base\nreturns a string"
@@ -585,7 +575,6 @@ def _caterer():
     n = 0  # you're the worst caterer we've ever had!
     while 1: yield (n * n + n + 2) // 2; n += 1
 
-
 def to_yc(x, **kwargs):
     "converts any number in base ten to the lazy caterer's base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -603,9 +592,8 @@ nstd_bases['caterer'] = [to_yc, yc_to]
 ## --------------- sylvester base --------------------------
 def _syl():
     "sylvester's sequence generator"
-    s = 1; yield 2
-    while 1: s *= (s + 1); yield s + 1
-
+    s = 1; yield 2  # this grows too large too fast to be pratical as a base
+    while 1: s *= (s + 1); yield s + 1  # perhaps remove it?
 
 def to_sy(x, **kwargs):
     "converts any number in base ten to sylvester base\nreturns a string"
@@ -637,7 +625,6 @@ def _ooze():
         if c >= d: mx -= 1; c = 0
         if mx < mn: mx = mn
 
-
 def to_oz(x, **kwargs):
     "converts any number in base ten to the ooze base\nreturns a string"
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
@@ -651,3 +638,52 @@ def oz_to(x, **kwargs):
     return num
 
 nstd_bases['ooze'] = [to_oz, oz_to]
+
+## --------------- "time" base -----------------------------
+# there's several ways to display time - this is just one
+# this is here as an example - don't actually use it to encode time
+def _time():
+    "yields time bases for seconds, minutes, hours, days and weeks"
+    for i in [60, 60, 24, 7]: yield i
+    while 1: yield 10  # to handle week overflow
+
+def to_tm(x, **kwargs):
+    "converts any number in base ten to time (up to weeks) base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _time, **kwargs)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def tm_to(x, **kwargs):
+    "converts a time (up to weeks) number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    num = _mixed_to(x, _time, sgn=sgn, sep=sep, name='time', sym='t')
+    return num
+    
+nstd_bases['time'] = [to_tm, tm_to]
+
+## --------------- idoneal base ----------------------------
+def _idoneal():
+    "yields idoneal numbers"
+    ido = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 15, 16, 18, 21, 22, 24, 25,
+           28, 30, 33, 37, 40, 42, 45, 48, 57, 58, 60, 70, 72, 78, 85, 88, 93,
+           102, 105, 112, 120, 130, 133, 165, 168, 177, 190, 210, 232, 240,
+           253, 273, 280, 312, 330, 345, 357, 385, 408, 462, 520, 760, 840,
+           1320, 1365, 1848)  # This is every idoneal number, if the Riemann
+    # hypothesis is true. If it isn't, then there is one (and only one!)
+    # more number - if I've read about these correctly. But let's face it, the
+    for i in ido: yield i  # hypothesis is true for all intents and purposes.
+    while 1: yield 10  # to handle overflow        (unless you're a stickler!)
+
+def to_il(x, **kwargs):
+    "converts any number in base ten to idoneal base\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    lst = _to_mixed(x, _idoneal, **kwargs)
+    return _sup.lst_to_str(lst, sgn, sep)
+
+def il_to(x, **kwargs):
+    "converts a idoneal number to base ten\nreturns a string"
+    sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
+    num = _mixed_to(x, _idoneal, sgn=sgn, sep=sep, name='idoneal', sym='i')
+    return num
+    
+nstd_bases['idoneal'] = [to_il, il_to]

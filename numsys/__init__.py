@@ -31,17 +31,19 @@ __doc__ = """A number base conversion system, version {}
 __all__ = ['rebase', 'guess', 'in_decimal', 'num_digits', # this file
            'to_base', 'to_ten',
            'mpf', 'mpc', 'set_precision', 'set_digitset', # support file
-           'roman', 'factorial', 'named_bases',           # nonstandard file
+           'version', 'backend', 'max_base', 'numStor',
+           'roman', 'roman_to', 'named_bases',            # nonstandard file
+           'factorial', 'factorial_to',
            ]
 
 # from support file
-mpf = _sup.mpf
-mpc = _sup.mpc
+mpf, mpc = _sup.mpf, _sup.mpc
 backend = _sup.backend
 set_precision = _sup.set_prec
 set_digitset = _sup.set_digitset
+max_base = _sup.maxchr
 numStor = _sup.numStor
-VERSION = _sup.version
+version = _sup.version
 
 # from nonstandard file
 roman = _nsd.to_ro
@@ -136,6 +138,9 @@ def rebase(num, b1, b2, **kwargs):
 def to_base(x, b, **kwargs):
     """convert a base ten numeric value x to positional base b
     only handles positional bases - use rebase for nonpositional bases
+    return a string
+    (unless given base and converted digit is larger than available characters,
+    then returns a list)
     """
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     x, b = _sup.parse_base(x), _sup.parse_base(b)
