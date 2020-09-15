@@ -658,12 +658,12 @@ def tm_to(x, **kwargs):
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _time, sgn=sgn, sep=sep, name='time', sym='t')
     return num
-    
+
 nstd_bases['time'] = [to_tm, tm_to]
 
 ## --------------- idoneal base ----------------------------
 def _idoneal():
-    "yields idoneal numbers"
+    "yields idoneal numbers, then 10 once all are exhausted"
     ido = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 15, 16, 18, 21, 22, 24, 25,
            28, 30, 33, 37, 40, 42, 45, 48, 57, 58, 60, 70, 72, 78, 85, 88, 93,
            102, 105, 112, 120, 130, 133, 165, 168, 177, 190, 210, 232, 240,
@@ -685,5 +685,5 @@ def il_to(x, **kwargs):
     sgn, sep = kwargs.get('sgn', '-'), kwargs.get('sep', '.')
     num = _mixed_to(x, _idoneal, sgn=sgn, sep=sep, name='idoneal', sym='i')
     return num
-    
+
 nstd_bases['idoneal'] = [to_il, il_to]

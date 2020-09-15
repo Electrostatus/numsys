@@ -140,6 +140,7 @@ class testNumsys(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    print('version: ' + _sup.version)
     print('backend: ' + _sup.backend)
     # python 3.8.5:
     # testing just test_imag_cmpx_identity (all others commented out):

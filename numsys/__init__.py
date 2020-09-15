@@ -55,8 +55,7 @@ prime_gen = _nsd._pgen
 
 
 def rebase(num, b1, b2, **kwargs):
-    """
-    Convert a number from base b1 to base b2
+    """convert a number from base b1 to base b2
 
     Base inputs can be numeric strings (i.e. "-13.93486") to insure precision
     and can contain 'i' or 'j' to signify that they are imaginary values. Bases
@@ -187,8 +186,7 @@ def to_ten(x, b, **kwargs):
     return result
 
 def in_decimal(num, sgn='-', sep='.', as_str=False):
-    """
-    Leaves num as is, but converts each symbol to its value in base 10
+    """leaves num as is, but converts each symbol to its value in base 10
     will return a list unless as_str is True
     """
     sgn, sep = _sup.str_(sgn), _sup.str_(sep)

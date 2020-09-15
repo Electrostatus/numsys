@@ -13,14 +13,16 @@ try:  # to look for better installed modules
     try:  # look for gmpy2
         #import this_is_also_not_a_module_but_for_testing
         import gmpy2 as gm
+        ceil, floor = gm.ceil, gm.floor
+        #mpf, mpc = gm.mpfr, gm.mpc
         def log(x, b=None):
             if not b: return gm.log(x)
             else: return gm.log(x) / gm.log(b)
-        ceil, floor = gm.ceil, gm.floor
-        #mpf, mpc = gm.mpfr, gm.mpc
+
         def mpf(x):
             "converts input into multiprecision float - type gmpy2.mpfr"
             return gm.mpfr(x)
+
         def mpc(a, b=None):
             "converts input into multiprecision complex - type gmpy2.mpc"
             if not b: return gm.mpc(a)
@@ -29,11 +31,14 @@ try:  # to look for better installed modules
 
     except ImportError:  # use mpmath instead
         from mpmath import mp as mp
-        log, ceil, floor = mp.log, mp.ceil, mp.floor
+        ceil, floor = mp.ceil, mp.floor
         #mpf, mpc = mp.mpf, mp.mpc
+        log = mp.log
+
         def mpf(x):
             "converts input into multiprecision float - type mpmath.mp.mpf"
             return mp.mpf(x)
+
         def mpc(a, b=None):
             "converts input into multiprecision complex - type mpmath.mp.mpc"
             if not b: return mp.mpc(a)
@@ -43,16 +48,20 @@ try:  # to look for better installed modules
 except ImportError:  # failing those, use the built-in modules
     from math import ceil as _cil, floor as _flr
     floor, ceil = lambda x: int(_flr(x)), lambda x: int(_cil(x))
+
     import decimal as dm
     try: import complex_decimal as cd
     except ImportError: from numsys import complex_decimal as cd
+    #mpf, mpc = dm.Decimal, cd.ComplexDecimal
+
     def log(x, b=None):
         if not b: return mpf(x).ln()
         else: return mpf(x).ln() / mpf(b).ln()
-    #mpf, mpc = dm.Decimal, cd.ComplexDecimal
+
     def mpf(x):
         "converts input into multiprecision float - type decimal.Decimal"
         return dm.Decimal(x)
+
     def mpc(a, b=None):
         "converts input into multiprecision complex - type ComplexDecimal"
         if not b: return cd.ComplexDecimal(a)
@@ -292,7 +301,7 @@ references = {'A': {'ref': u'A. Rényi, "Representations for real numbers '
               }
 
 # constants ---------------------------------------------------------------
-version = '0.9.C'
+version = '1.0.0'
 maxchr += 1  # base 0 uses no characters, so all of unicode is valid
 prec = set_prec(100)   # precision (in base two)
 digitset = default_digitset()

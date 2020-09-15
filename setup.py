@@ -15,9 +15,11 @@ setup(name = 'numsys',
       classifiers = [
         'Operating System :: OS Independent',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
         'Natural Language :: English',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'Intended Audience :: Education',
         ],
       )
