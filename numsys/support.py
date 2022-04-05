@@ -301,7 +301,7 @@ references = {'A': {'ref': u'A. Rényi, "Representations for real numbers '
               }
 
 # constants ---------------------------------------------------------------
-version = '1.0.0'
+version = '1.0.01'
 maxchr += 1  # base 0 uses no characters, so all of unicode is valid
 prec = set_prec(100)   # precision (in base two)
 digitset = default_digitset()

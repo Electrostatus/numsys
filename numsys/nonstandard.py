@@ -465,7 +465,7 @@ nstd_bases['noble'] = [to_nb, nb_to]
 ## --------------- ??? base --------------------------------
 def _whatever(n=13, mode='stable'):  # almost like a damped spring
     "I'm making up this sequence"    # (if mode is stable)
-    m = {'stable': 1, 'decay':0}.get(mode.lower(), 'stable')
+    m = {'stable': 1, 'decay':0}.get(mode.lower(), 1)
     n = abs(n); n = 1 if not n else n  # no infinite primes here!
     init = list(_pgen(n))[::-1]  # backwards 'cause I can! so there!
     while 1:

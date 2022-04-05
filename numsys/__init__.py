@@ -37,21 +37,21 @@ __all__ = ['rebase', 'guess', 'in_decimal', 'num_digits', # this file
            ]
 
 # from support file
-mpf, mpc = _sup.mpf, _sup.mpc
-backend = _sup.backend
+mpf, mpc      = _sup.mpf, _sup.mpc
+backend       = _sup.backend
 set_precision = _sup.set_prec
-set_digitset = _sup.set_digitset
-max_base = _sup.maxchr
-numStor = _sup.numStor
-version = _sup.version
+set_digitset  = _sup.set_digitset
+max_base      = _sup.maxchr
+numStor       = _sup.numStor
+__version__   = _sup.version
 
 # from nonstandard file
-roman = _nsd.to_ro
-roman_to = _nsd.ro_to
-factorial = _nsd.to_fc
+roman        = _nsd.to_ro
+roman_to     = _nsd.ro_to
+factorial    = _nsd.to_fc
 factorial_to = _nsd.fc_to
-named_bases = list(_nsd.nstd_bases.keys())
-prime_gen = _nsd._pgen
+named_bases  = list(_nsd.nstd_bases.keys())
+prime_gen    = _nsd._pgen
 
 
 def rebase(num, b1, b2, **kwargs):
@@ -153,7 +153,7 @@ def to_base(x, b, **kwargs):
         raise E
     elif b.real and not b.imag:                    # real bases
         if not x.imag:
-            res, ult = lts(tr(x, b, **kwargs), sgn, sep), 0
+            res, ult = lts(tr(x.real, b, **kwargs), sgn, sep), 0
         else:
             res = lts(tr(x.real, b, **kwargs), sgn, sep)
             ult = lts(tr(x.imag, b, **kwargs), sgn, sep)
