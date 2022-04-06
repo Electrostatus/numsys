@@ -232,7 +232,7 @@ def num_digits(base):
     else: raise E
 
 def available_bases():  # does this make any sense to have?
-    "print out avaiable bases"
+    "print out available bases"
     maxchr = _sup.maxchr
     line = 'available bases:'
     line += '\nreal bases -{} < -1 and 1 < {}'.format(maxchr, maxchr)

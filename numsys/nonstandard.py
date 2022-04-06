@@ -73,7 +73,7 @@ def ze_to(x, **kwargs):
                'It\'s somewhat Zen, but not really', 'It\'s utter nonsense',
                'You thought this would actually return something?', 'error!',
                '...Clever girl *killed by raptors*', 'Confused? Try again.',
-               'You spent your nickle, we\'re done!', ('Well summer\'s over,'
+               'You spent your nickel, we\'re done!', ('Well summer\'s over,'
                ' the bonfires are dying down, the explosives are packed '#mst3k
                'away and the last rabid dog has been shot.'), 'Huh?!??1?one',
                'Try our sister base, base negative zero!', 'error? err-ror?',
@@ -132,7 +132,7 @@ nstd_bases['roman'] = [to_ro, ro_to]
 #
 # because it skips starting zeros, factorial base won't have 0! or 1/0!
 # positions - likewise for the fibonacci bases
-# possibly spin these out into a seperate file later - mixed.py
+# possibly spin these out into a separate file later - mixed.py
 def _to_mixed(x, generator, **kwargs):
     """converts any number in base ten to a mixed base
     this is a generalized form, do not call directly
