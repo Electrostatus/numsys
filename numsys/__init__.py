@@ -10,10 +10,10 @@ except ImportError:  # Python 3
 
 __doc__ = """A number base conversion system, version {}
 
-    can convert any real or complex number
+    Can convert any real or complex number
     to a base of any real or imaginary value
 
-    invalid bases are abs(base) == 1 or abs(base) == 0
+    Invalid bases are abs(base) == 1 or abs(base) == 0
 
     The number of available characters are {:,}.
     If a base requires more characters, then the system will return a list
@@ -23,6 +23,9 @@ __doc__ = """A number base conversion system, version {}
     values may fall to custom complex class based on Python's decimal module.
     The decimal module will also be used if converting to a float base or
     conversion of a float-like value should mpmath or gmpy2 is not found.
+
+    Additionally, can convert numbers to various nonstandard bases
+    (Roman numerals, Factorial (mixed-radix) base; see named_bases for listings)
 
     sgn - what character the negative sign is (default '-')
     sep - what character the radix point (fractional separator) is (default '.')
