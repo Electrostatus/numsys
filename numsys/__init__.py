@@ -109,10 +109,9 @@ def rebase(num, b1, b2, **kwargs):
         try: ult = nsd_to(imag, **kwargs)
         except AttributeError: ult = ''
         val10 = res if not ult else (res + ult * mpc(0, 1))
-    elif ((b1.real and not b1.imag) or              # real, imag bases
-          (not b1.real and b1.imag)):
+    elif (b1.real or b1.imag):                      # real, imag, complex bases
         val10 = to_ten(num, b1, **kwargs)
-    else:  # complex base, base 0
+    else:                                           # base 0, other
         raise E1
 
     # return as a numeric type
@@ -131,7 +130,7 @@ def rebase(num, b1, b2, **kwargs):
           (not b2.real and b2.imag)):
         res = to_base(val10, b2, **kwargs)
         ult = 0
-    else:                                         # complex base, base 0
+    else:                                         # complex bases, base 0
         raise E2
 
     result = res if ult in _sup.zero_types else numStor(res, ult)
@@ -184,6 +183,8 @@ def to_ten(x, b, **kwargs):
         ult = _std.to_10(imag, b, **kwargs)
         result = res if not ult else (res + ult * mpc(0, 1))
     elif not b.real and b.imag:                    # imaginary bases
+        result = _std.to_10(real, b, **kwargs)
+    elif b.real and b.imag:                        # complex bases
         result = _std.to_10(real, b, **kwargs)
     else: raise E
     return result
